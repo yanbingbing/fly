@@ -1,0 +1,65 @@
+<?php
+/**
+ * Fly Framework
+ *
+ * @copyright Copyright (c) 2013 Bingbing. (http://yanbingbing.com)
+ */
+
+namespace Fly\Db\Sql\Predicate;
+
+use Fly\Db\Sql\Select;
+use Fly\Db\Sql\Exception;
+
+class NotIn implements PredicateInterface
+{
+	protected $identifier;
+	protected $valueSet;
+
+	/**
+	 * Constructor
+	 *
+	 * @param  null|string $identifier
+	 * @param  array|Select $valueSet
+	 */
+	public function __construct($identifier, $valueSet)
+	{
+		$this->identifier = $identifier;
+		if (!is_array($valueSet) && !$valueSet instanceof Select) {
+			throw new Exception\InvalidArgumentException(
+				'$valueSet must be either an array or a Select object, ' . gettype($valueSet) . ' given'
+			);
+		}
+		$this->valueSet = $valueSet;
+	}
+
+
+	/**
+	 * Return array of parts for where statement
+	 *
+	 * @return array
+	 */
+	public function getExpressionData()
+	{
+		$values = $this->valueSet;
+		if ($values instanceof Select) {
+			$specification = '%s NOT IN %s';
+			$types = array(self::TYPE_VALUE);
+			$values = array($values);
+		} else {
+			$specification = '%s NOT IN (' . implode(', ', array_fill(0, count($values), '%s')) . ')';
+			$types = array_fill(0, count($values), self::TYPE_VALUE);
+		}
+
+		array_unshift($values, $this->identifier);
+		array_unshift($types, self::TYPE_IDENTIFIER);
+
+		return array(
+			array(
+				$specification,
+				$values,
+				$types,
+			)
+		);
+	}
+
+}
