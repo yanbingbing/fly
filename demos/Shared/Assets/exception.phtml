@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<title><?=$errstr?></title>
+<style type="text/css">
+	body {font-family:Arial, Helvetica, sans-serif;font-size:12px;}
+	h1 {font-size:24px;font-weight:bold;color:#6699cc;}
+	h2 {font-size:14px;font-weight:bold;margin:0px;padding:0px;margin-bottom:8px;}
+	code, pre {color:#4444AA;font-size:12px;}
+	pre {margin-top:0;margin-left:12px;border-left:2px solid #CCCCCC;padding-left:20px;}
+	a {color: #3366CC;text-decoration:none;}
+	a:hover {text-decoration:underline;}
+	.error {word-break:break-all;word-wrap:break-word;background:#ffeeee;padding:10px;border:1px solid #ddcccc;}
+	.error h2 {color:#FF3300;}
+	.trace {font-family:Verdana, Arial, Helvetica, sans-serif;font-size:12px;background-color:#FFFFCC;padding:10px;border:1px solid #FF9900;}
+	.filedesc {margin-left:16px;color:#666666;display:none}
+	.line-num {font-size:12px;vertical-align:top;text-align:right;}
+	.line-bold {font-weight:bold;color:white;background-color:red;}
+	.source {font-size:12px;vertical-align:top;padding-left:10px;}
+</style>
+<script type="text/javascript">
+function filedesc(index) {
+    var el = document.getElementById('desc-'+index);
+    el.style.display = el.style.display == 'block' ? 'none' : 'block';
+}
+</script>
+</head>
+<body>
+<h1><?=$errstr?></h1>
+<div class="error">
+	<h2>错误原因:</h2>
+	<p><?=nl2br(str_replace(' ', '&nbsp;', htmlspecialchars($errinfo)))?></p>
+	<p>
+		<strong>源程序:</strong>
+		<table cellspacing="0" cellpadding="0">
+			<?php foreach (excerpt($errfile, $errline) as $line=>$code):?>
+			<tr>
+				<td class="line-num<?=$line==$errline?' line-bold':''?>"><?=$line?></td>
+				<td class="source">
+					<code><?=nl2br(str_replace(array(' ',"\t"), array('&nbsp;','&nbsp;&nbsp;&nbsp;&nbsp;'), htmlspecialchars($code)))?></code>
+				</td>
+			</tr>
+			<?php endforeach;?>
+		</table>
+	</p>
+</div>
+<p><strong>详细:</strong></p>
+<div class="trace">
+	<?php foreach ($trace as $t): ?>
+	<div>
+		<strong>文件:</strong> <a href="javascript:filedesc('<?=$t["index"]?>');"><?=$t['file']?> [<?=$t['line']?>]</a>
+	</div>
+	<span>#<?=$t['index']?> <?=$t['function']?>(<?=implode(', ', $t['argd'])?>)</span>
+	<div id="desc-<?=$t['index']?>" class="filedesc">
+		<strong>参数:</strong>
+		<?=dump($t['args'])?>
+		<strong>源程序:</strong>
+		<table cellspacing="0" cellpadding="0">
+			<?php foreach (excerpt($t['file'], $t['line']) as $line=>$code):?>
+			<tr>
+				<td class="line-num<?=$line==$t['line']?' line-bold':''?>"><?=$line?></td>
+				<td class="source">
+					<code><?=nl2br(str_replace(array(' ',"\t"), array('&nbsp;','&nbsp;&nbsp;&nbsp;&nbsp;'), htmlspecialchars($code)))?></code>
+				</td>
+			</tr>
+			<?php endforeach;?>
+		</table>
+	</div>
+	<hr />
+	<?php endforeach;?>
+</div>
+</body>
+</html>

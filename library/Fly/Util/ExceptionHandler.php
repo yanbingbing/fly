@@ -2,7 +2,6 @@
 
 namespace Fly\Util;
 
-use ErrorException;
 
 abstract class ExceptionHandler
 {
@@ -34,6 +33,6 @@ abstract class ExceptionHandler
 			case E_DEPRECATED:
 				return;
 		}
-		throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
+		throw new \ErrorException($errstr, 0, $errno, $errfile, $errline);
 	}
 }
