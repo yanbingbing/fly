@@ -10,217 +10,234 @@ namespace Fly\Mvc;
 use Fly\MountManager\MountManager;
 use Fly\Config\Config;
 use Fly\Mvc\Input\Http as HttpInput;
+use Fly\Mvc\Sender\Http as HttpSender;
 use Fly\Mvc\Router\Router;
 use Fly\Mvc\Controller\ControllerLoader;
 
 class Application
 {
-	/**
-	 * @var Config
-	 */
-	protected $config;
+    /**
+     * @var Config
+     */
+    protected $config;
 
-	/**
-	 * @var MountManager
-	 */
-	protected $mountManager;
+    /**
+     * @var MountManager
+     */
+    protected $mountManager;
 
-	/**
-	 * @var HttpInput
-	 */
-	protected $input;
+    /**
+     * @var HttpInput
+     */
+    protected $input;
 
-	/**
-	 * @var Router
-	 */
-	protected $router;
+    /**
+     * @var HttpSender
+     */
+    protected $sender;
 
-	/**
-	 * @var ControllerLoader
-	 */
-	protected $controllerLoader;
+    /**
+     * @var Router
+     */
+    protected $router;
 
-	/**
-	 * @param string|array|\Traversable $configure
-	 */
-	public function __construct($configure = null)
-	{
-		$this->config = new Config($configure);
+    /**
+     * @var ControllerLoader
+     */
+    protected $controllerLoader;
 
-		$this->mountManager = MountManager::getInstance();
+    /**
+     * @param string|array|\Traversable $configure
+     */
+    public function __construct($configure = null)
+    {
+        $this->config = new Config($configure);
 
-		if (isset($this->config['mounts'])) {
-			foreach ((array)$this->config['mounts'] as $name => $factory) {
-				$this->mountManager->mount($name, $factory);
-			}
-		}
+        $this->mountManager = MountManager::getInstance();
 
-		if (isset($this->config['inits'])) {
-			if (is_callable($this->config['inits'])) {
-				call_user_func($this->config['inits'], $this);
-			} elseif (is_array($this->config['inits']) || $this->config['inits'] instanceof \Traversable) {
-				foreach ($this->config['inits'] as $init) {
-					if (is_callable($init)) {
-						call_user_func($init, $this);
-					}
-				}
-			}
-		}
-	}
+        if (isset($this->config['mounts'])) {
+            foreach ((array)$this->config['mounts'] as $name => $factory) {
+                $this->mountManager->mount($name, $factory);
+            }
+        }
 
-	/**
-	 * Get config
-	 *
-	 * @return Config
-	 */
-	public function getConfig()
-	{
-		return $this->config;
-	}
+        if (isset($this->config['inits'])) {
+            if (is_callable($this->config['inits'])) {
+                call_user_func($this->config['inits'], $this);
+            } elseif (is_array($this->config['inits']) || $this->config['inits'] instanceof \Traversable) {
+                foreach ($this->config['inits'] as $init) {
+                    if (is_callable($init)) {
+                        call_user_func($init, $this);
+                    }
+                }
+            }
+        }
+    }
 
-	/**
-	 * @return MountManager
-	 */
-	public function getMountManager()
-	{
-		return $this->mountManager;
-	}
+    /**
+     * Get config
+     *
+     * @return Config
+     */
+    public function getConfig()
+    {
+        return $this->config;
+    }
 
-	/**
-	 * Set input instance
-	 *
-	 * @param HttpInput $input
-	 * @return $this
-	 */
-	public function setInput(HttpInput $input)
-	{
-		$this->input = $input;
-		$this->mountManager->mount('Input', $input);
+    /**
+     * @return MountManager
+     */
+    public function getMountManager()
+    {
+        return $this->mountManager;
+    }
 
-		return $this;
-	}
+    /**
+     * Set input instance
+     *
+     * @param HttpInput $input
+     * @return $this
+     */
+    public function setInput(HttpInput $input)
+    {
+        $this->input = $input;
+        $this->mountManager->mount('Input', $input);
 
-	/**
-	 * Get input
-	 *
-	 * @return HttpInput
-	 */
-	public function getInput()
-	{
-		if (!$this->input) {
-			$input = $this->mountManager->get('Input');
-			if (!$input instanceof HttpInput) {
-				$input = new HttpInput;
-				$this->mountManager->mount('Input', $input);
-			}
-			$this->input = $input;
-		}
-		return $this->input;
-	}
+        return $this;
+    }
 
-	/**
-	 * Set controller loader
-	 *
-	 * @param ControllerLoader $loader
-	 * @return $this
-	 */
-	public function setControllerLoader(ControllerLoader $loader)
-	{
-		$this->controllerLoader = $loader;
-		$this->mountManager->mount('ControllerLoader', $loader);
+    /**
+     * Get input
+     *
+     * @return HttpInput
+     */
+    public function getInput()
+    {
+        if (!$this->input) {
+            $input = $this->mountManager->get('Input');
+            if (!$input instanceof HttpInput) {
+                $input = new HttpInput;
+                $this->mountManager->mount('Input', $input);
+            }
+            $this->input = $input;
+        }
+        return $this->input;
+    }
 
-		return $this;
-	}
+    /**
+     * Get Sender
+     *
+     * @return HttpSender
+     */
+    public function getSender()
+    {
+        if (!$this->sender) {
+            $this->sender = new HttpSender;
+        }
+        return $this->sender;
+    }
 
-	/**
-	 * Get controller loader
-	 *
-	 * @return ControllerLoader
-	 */
-	public function getControllerLoader()
-	{
-		if (!$this->controllerLoader) {
-			$loader = $this->mountManager->get('ControllerLoader');
-			if (!$loader instanceof ControllerLoader) {
-				$loader = new ControllerLoader;
-				$this->mountManager->mount('ControllerLoader', $loader);
-			}
-			if (isset($this->config['controller_paths'])) {
-				$loader->registerPath($this->config['controller_paths']);
-			}
-			$this->controllerLoader = $loader;
-		}
+    /**
+     * Set controller loader
+     *
+     * @param ControllerLoader $loader
+     * @return $this
+     */
+    public function setControllerLoader(ControllerLoader $loader)
+    {
+        $this->controllerLoader = $loader;
+        $this->mountManager->mount('ControllerLoader', $loader);
 
-		return $this->controllerLoader;
-	}
+        return $this;
+    }
 
-	/**
-	 * Set router
-	 *
-	 * @param Router $router
-	 * @return $this
-	 */
-	public function setRouter(Router $router)
-	{
-		$this->router = $router;
-		$this->mountManager->mount('Router', $router);
+    /**
+     * Get controller loader
+     *
+     * @return ControllerLoader
+     */
+    public function getControllerLoader()
+    {
+        if (!$this->controllerLoader) {
+            $loader = $this->mountManager->get('ControllerLoader');
+            if (!$loader instanceof ControllerLoader) {
+                $loader = new ControllerLoader;
+                $this->mountManager->mount('ControllerLoader', $loader);
+            }
+            if (isset($this->config['controller_paths'])) {
+                $loader->registerPath($this->config['controller_paths']);
+            }
+            $this->controllerLoader = $loader;
+        }
 
-		return $this;
-	}
+        return $this->controllerLoader;
+    }
 
-	/**
-	 * Get router
-	 *
-	 * @return Router
-	 */
-	public function getRouter()
-	{
-		if (!$this->router) {
-			$router = $this->mountManager->get('Router');
-			if (!$router instanceof Router) {
-				$router = new Router;
-				$this->mountManager->mount('Router', $router);
-			}
-			if (isset($this->config['routes'])) {
-				$router->addRoutes($this->config['routes']);
-			}
-			$this->router = $router;
-		}
+    /**
+     * Set router
+     *
+     * @param Router $router
+     * @return $this
+     */
+    public function setRouter(Router $router)
+    {
+        $this->router = $router;
+        $this->mountManager->mount('Router', $router);
 
-		return $this->router;
-	}
+        return $this;
+    }
 
-	/**
-	 * Run the application
-	 *
-	 * @throws Exception\DispatchException
-	 */
-	public function run()
-	{
-		$input = $this->getInput();
+    /**
+     * Get router
+     *
+     * @return Router
+     */
+    public function getRouter()
+    {
+        if (!$this->router) {
+            $router = $this->mountManager->get('Router');
+            if (!$router instanceof Router) {
+                $router = new Router;
+                $this->mountManager->mount('Router', $router);
+            }
+            if (isset($this->config['routes'])) {
+                $router->addRoutes($this->config['routes']);
+            }
+            $this->router = $router;
+        }
 
-		$match = $this->getRouter()->match($input);
+        return $this->router;
+    }
 
-		$controllerName = $input->get('controller');
+    /**
+     * Run the application
+     *
+     * @throws Exception\DispatchException
+     */
+    public function run()
+    {
+        $input = $this->getInput();
 
-		if (empty($controllerName)) {
-			$controllerName = 'NotFound';
-			$input->set('controller', $controllerName);
-		}
+        $match = $this->getRouter()->match($input);
 
-		$loader = $this->getControllerLoader();
+        $loader = $this->getControllerLoader();
 
-		$controller = $loader->get($controllerName, $this);
+        $controllerName = $input->get('controller');
 
-		if ($match) {
-			$controller->setRouteMatch($match);
-		}
+        if (empty($controllerName) || !($controller = $loader->get($controllerName, $this))) {
+            $this->getSender()->setStatus(404)->send(true);
+            return;
+        }
 
-		try {
-			$controller->dispatch();
-			$controller->getSender()->send();
-		} catch (\Exception $ex) {
-			throw new Exception\DispatchException($ex->getMessage(), $ex->getCode(), $ex);
-		}
-	}
+        if ($match) {
+            $controller->setRouteMatch($match);
+        }
+
+        try {
+            $controller->dispatch();
+            $controller->getSender()->send();
+        } catch (\Exception $ex) {
+            throw new Exception\DispatchException($ex->getMessage(), $ex->getCode(), $ex);
+        }
+    }
 }
