@@ -7,7 +7,7 @@
 
 namespace Fly\Db\Adapter\Metadata;
 
-class Mysql extends AbstractMetadata
+class Mysql extends Metadata
 {
 	/**
 	 * @param string $table

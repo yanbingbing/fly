@@ -7,12 +7,11 @@
 
 namespace Fly\Db\Adapter\Metadata;
 
-use Fly\Cache\CachePool;
 use Fly\Db\Adapter\AdapterInterface;
 use Fly\Cache\Storage\StorageInterface as CacheStorage;
 use Fly\Db\Adapter\Exception;
 
-abstract class AbstractMetadata implements MetadataInterface
+abstract class Metadata implements MetadataInterface
 {
 
 	const DEFAULT_SCHEMA = '__DEFAULT_SCHEMA__';
@@ -35,17 +34,17 @@ abstract class AbstractMetadata implements MetadataInterface
 	/**
 	 * @var CacheStorage
 	 */
-	protected $cacher;
+	protected $cacheStorage;
 
 	/**
 	 * Constructor
 	 *
 	 * @param AdapterInterface $adapter
 	 */
-	public function __construct(AdapterInterface $adapter)
+	public function __construct(AdapterInterface $adapter, CacheStorage $cacheStorage = null)
 	{
 		$this->adapter = $adapter;
-		$this->cacher = CachePool::get('MetadataCacher');
+		$this->cacheStorage = $cacheStorage;
 		$this->defaultSchema = ($adapter->getDriver()->getConnection()->getCurrentSchema()) ? : self::DEFAULT_SCHEMA;
 	}
 
@@ -93,8 +92,8 @@ abstract class AbstractMetadata implements MetadataInterface
 
 	protected function getData($key)
 	{
-		if ($this->cacher) {
-			return $this->cacher->get($key);
+		if ($this->cacheStorage) {
+			return $this->cacheStorage->get($key);
 		} else {
 			return $this->data[$key];
 		}
@@ -102,8 +101,8 @@ abstract class AbstractMetadata implements MetadataInterface
 
 	protected function hasData($key)
 	{
-		if ($this->cacher) {
-			return $this->cacher->has($key);
+		if ($this->cacheStorage) {
+			return $this->cacheStorage->has($key);
 		} else {
 			return isset($this->data[$key]);
 		}
@@ -111,8 +110,8 @@ abstract class AbstractMetadata implements MetadataInterface
 
 	protected function setData($key, $data)
 	{
-		if ($this->cacher) {
-			$this->cacher->set($key, $data);
+		if ($this->cacheStorage) {
+			$this->cacheStorage->set($key, $data);
 		} else {
 			$this->data[$key] = $data;
 		}

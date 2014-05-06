@@ -7,6 +7,9 @@
 
 namespace Fly\Db\Adapter;
 
+use Fly\Cache\Cache;
+use Fly\Cache\Storage\StorageInterface as CacheStorage;
+
 class Adapter implements AdapterInterface
 {
 	/**
@@ -208,7 +211,89 @@ class Adapter implements AdapterInterface
 	{
 		switch ($platformName) {
 			case 'MySQL':
-				return new Metadata\Mysql($this);
+				return new Metadata\Mysql($this, self::getMetaCacheStorage());
 		}
 	}
+
+    /**
+     * @var callable|CacheStorage|array|\ArrayAccess
+     */
+    protected static $metaCacheStorage;
+
+    /**
+     * @param $cacheStorage callable|CacheStorage|array|\ArrayAccess
+     */
+    public static function setMetaCacheStorage($cacheStorage)
+    {
+        self::$metaCacheStorage = $cacheStorage;
+    }
+
+    /**
+     * @return null|CacheStorage
+     */
+    public static function getMetaCacheStorage()
+    {
+        if (is_null(self::$metaCacheStorage) || (self::$metaCacheStorage instanceof CacheStorage)) {
+            return self::$metaCacheStorage;
+        }
+
+        if (is_callable(self::$metaCacheStorage)) {
+            $factory = self::$metaCacheStorage;
+            try {
+                $instance = $factory();
+            } catch (\Exception $e) {
+                throw new Exception\RuntimeException(
+                    'An exception was raised while creating cacheStorage', $e->getCode(), $e
+                );
+            }
+            if (!($instance instanceof CacheStorage)) {
+                throw new Exception\InvalidArgumentException('Invalid CacheStorage return from callable');
+            }
+            self::$metaCacheStorage = $instance;
+        } else {
+            self::$metaCacheStorage = Cache::factory(self::$metaCacheStorage);
+        }
+        return self::$metaCacheStorage;
+    }
+
+    /**
+     * @var callable|AdapterInterface|Driver\DriverInterface|array
+     */
+    protected static $defaultAdapter;
+
+    /**
+     * @param $adapter callable|AdapterInterface|Driver\DriverInterface|array
+     */
+    public static function setDefaultAdapter($adapter)
+    {
+        self::$defaultAdapter = $adapter;
+    }
+
+    /**
+     * @return null|AdapterInterface
+     */
+    public static function getDefaultAdapter()
+    {
+        if (is_null(self::$defaultAdapter) || (self::$defaultAdapter instanceof AdapterInterface)) {
+            return self::$defaultAdapter;
+        }
+        if (is_callable(self::$defaultAdapter)) {
+            $factory = self::$defaultAdapter;
+            try {
+                $instance = $factory();
+            } catch (\Exception $e) {
+                throw new Exception\RuntimeException(
+                    'An exception was raised while creating adapter', $e->getCode(), $e
+                );
+            }
+            if (!($instance instanceof AdapterInterface)) {
+                throw new Exception\InvalidArgumentException('Invalid adapter return from callable');
+            }
+            self::$defaultAdapter = $instance;
+        } else {
+            self::$defaultAdapter = new Adapter(self::$defaultAdapter);
+        }
+
+        return self::$defaultAdapter;
+    }
 }

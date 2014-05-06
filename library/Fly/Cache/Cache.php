@@ -8,15 +8,8 @@
 namespace Fly\Cache;
 
 
-abstract class CachePool
+abstract class Cache
 {
-
-	const DEFAULT_STORAGE = '__DEFAULT__';
-
-	/**
-	 * @var Storage\StorageInterface[]
-	 */
-	protected static $pool = array();
 
 	/**
 	 * @param array|\ArrayAccess $options
@@ -54,33 +47,6 @@ abstract class CachePool
 		$storage->setOptions($options);
 
 		return $storage;
-	}
-
-	/**
-	 * @param Storage\StorageInterface $storage
-	 * @param string $name
-	 */
-	public static function register(Storage\StorageInterface $storage, $name = self::DEFAULT_STORAGE)
-	{
-		self::$pool[$name] = $storage;
-	}
-
-	/**
-	 * @param string $name
-	 * @return bool
-	 */
-	public static function has($name)
-	{
-		return isset(self::$pool[$name]);
-	}
-
-	/**
-	 * @param string $name
-	 * @return null|Storage\StorageInterface
-	 */
-	public static function get($name = self::DEFAULT_STORAGE)
-	{
-		return self::has($name) ? self::$pool[$name] : null;
 	}
 
 	protected static function normalizeName($name)

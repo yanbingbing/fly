@@ -8,7 +8,7 @@
 namespace Fly\Db\Sql;
 
 use Fly\Db\Adapter\AdapterInterface;
-use Fly\Db\Adapter\AdapterPool;
+use Fly\Db\Adapter\Adapter;
 use Fly\Db\Adapter\Driver\StatementInterface;
 
 class Sql
@@ -28,7 +28,7 @@ class Sql
 	 */
 	public function __construct(AdapterInterface $adapter = null, $table = null)
 	{
-		if (!$adapter && !($adapter = AdapterPool::get())) {
+		if (!$adapter && !($adapter = Adapter::getDefaultAdapter())) {
 			throw new Exception\RuntimeException('A adapter must be suplied');
 		}
 

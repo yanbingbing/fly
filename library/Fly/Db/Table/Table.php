@@ -7,7 +7,7 @@
 
 namespace Fly\Db\Table;
 
-use Fly\Db\Adapter\AdapterPool;
+use Fly\Db\Adapter\Adapter;
 use Fly\Db\Sql\TableIdentifier;
 use Fly\MountManager\MountManager;
 
@@ -43,7 +43,7 @@ class Table extends AbstractTable
 	protected function setupAdapter($adapter)
 	{
 		if (!$adapter && !($adapter = $this->getAdapter())
-			&& !($adapter = AdapterPool::get()))
+			&& !($adapter = Adapter::getDefaultAdapter()))
 		{
 			throw new Exception\RuntimeException('Adapter must be setup');
 		}
