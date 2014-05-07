@@ -114,7 +114,7 @@ class Metadata implements MetadataInterface
 
 	protected function load($table, $schema)
     {
-        $this->getSource()->read($table, $schema);
+        return $this->getSource()->read($table, $schema);
     }
 
 	protected function getData($key)

@@ -41,7 +41,7 @@ class Memcache extends AbstractStorage
 			return $this;
 		}
 		if (is_string($resource)) {
-			$resource = array($resource);
+			$resource = explode(':', $resource);
 		}
 		if (!is_array($resource) && !$resource instanceof \ArrayAccess) {
 			throw new Exception\InvalidArgumentException(sprintf(
@@ -118,7 +118,7 @@ class Memcache extends AbstractStorage
 		if (!$this->resource) {
 			throw new Exception\RuntimeException('Memcache resource must be set');
 		}
-		if (!$this->resource instanceof MemcacheSource) {
+		if (!($this->resource instanceof MemcacheSource)) {
 			$resource = new MemcacheSource;
 			if (!$resource->addserver($this->resource['host'], $this->resource['port'],
 				$this->resource['persistent'], $this->resource['weight'])) {
