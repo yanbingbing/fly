@@ -10,25 +10,29 @@ namespace Fly\Uri;
 class Http extends Uri
 {
     /**
-     * @var array
+     * @see Uri::$validSchemes
      */
-    protected static $validSchemes = array('http', 'https');
+    protected static $validSchemes = array(
+        'http',
+        'https'
+    );
 
     /**
-     * @var array
+     * @see Uri::$defaultPorts
      */
-    protected static $defaultPorts = array('http' => 80, 'https' => 443);
+    protected static $defaultPorts = array(
+        'http' => 80,
+        'https' => 443,
+    );
 
     /**
      * User name as provided in authority of URI
-     *
      * @var null|string
      */
     protected $user;
 
     /**
      * Password as provided in authority of URI
-     *
      * @var null|string
      */
     protected $password;
@@ -66,7 +70,7 @@ class Http extends Uri
     /**
      * Set the username part (before the ':') of the userInfo URI part
      *
-     * @param  string $user
+     * @param string $user
      * @return Http
      */
     public function setUser($user)
@@ -78,7 +82,7 @@ class Http extends Uri
     /**
      * Set the password part (after the ':') of the userInfo URI part
      *
-     * @param  string $password
+     * @param string $password
      * @return Http
      */
     public function setPassword($password)
@@ -89,6 +93,7 @@ class Http extends Uri
 
     /**
      * Parse the user info into username and password segments
+     *
      * Parses the user information into username and password segments, and
      * then sets the appropriate values.
      *
@@ -115,9 +120,10 @@ class Http extends Uri
 
     /**
      * Return the URI port
+     *
      * If no port is set, will return the default port according to the scheme
      *
-     * @return integer
+     * @return int
      */
     public function getPort()
     {
@@ -132,7 +138,7 @@ class Http extends Uri
     /**
      * Parse a URI string
      *
-     * @param  string $uri
+     * @param string $uri
      * @return Http
      */
     public function parse($uri)
