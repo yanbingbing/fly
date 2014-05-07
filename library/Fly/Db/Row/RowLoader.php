@@ -47,9 +47,11 @@ class RowLoader
             return $this;
         }
         $path = self::normalizePath($path);
+        /*
         if (!is_dir($path)) {
             throw new Exception\InvalidArgumentException(sprintf('"%s" is not a directory', $path));
         }
+        */
         $this->paths[$path] = rtrim($namespace, self::NS_SEPARATOR) . self::NS_SEPARATOR;
 
         return $this;
