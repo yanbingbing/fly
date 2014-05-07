@@ -113,47 +113,10 @@ class Update extends AbstractSql
      */
     public function where($predicate, $combination = Predicate\PredicateSet::OP_AND)
     {
-        if ($predicate === null) {
-            throw new Exception\InvalidArgumentException('Predicate cannot be null');
-        }
-
         if ($predicate instanceof Where) {
             $this->where = $predicate;
-        } elseif ($predicate instanceof \Closure) {
-            $predicate($this->where);
         } else {
-            if (is_string($predicate)) {
-                // String $predicate should be passed as an expression
-                $predicate = new Predicate\Expression($predicate);
-                $this->where->addPredicate($predicate, $combination);
-            } elseif (is_array($predicate)) {
-
-                foreach ($predicate as $pkey => $pvalue) {
-                    // loop through predicates
-
-                    if (is_string($pkey)) {
-                        if (strpos($pkey, '?') !== false) {
-                            $predicate = new Predicate\Expression($pkey, $pvalue);
-                        } elseif ($pvalue === null) {
-                            // map PHP null to SQL IS NULL expression
-                            $predicate = new Predicate\IsNull($pkey, $pvalue);
-                        } elseif (is_array($pvalue)) {
-                            // if the value is an array, assume IN() is desired
-                            $predicate = new Predicate\In($pkey, $pvalue);
-                        } else {
-                            // otherwise assume that array('foo' => 'bar') means "foo" = 'bar'
-                            $predicate = new Predicate\Operator($pkey, $pvalue, Predicate\Operator::OP_EQ);
-                        }
-                    } elseif ($pvalue instanceof Predicate\PredicateInterface) {
-                        // Predicate type is ok
-                        $predicate = $pvalue;
-                    } else {
-                        // must be an array of expressions (with int-indexed array)
-                        $predicate = new Predicate\Expression($pvalue);
-                    }
-                    $this->where->addPredicate($predicate, $combination);
-                }
-            }
+            $this->where->addPredicates($predicate, $combination);
         }
         return $this;
     }

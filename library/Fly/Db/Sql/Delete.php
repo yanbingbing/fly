@@ -97,41 +97,8 @@ class Delete extends AbstractSql
     {
         if ($predicate instanceof Where) {
             $this->where = $predicate;
-        } elseif ($predicate instanceof \Closure) {
-            $predicate($this->where);
         } else {
-
-            if (is_string($predicate)) {
-                // String $predicate should be passed as an expression
-                $predicate = new Predicate\Expression($predicate);
-                $this->where->addPredicate($predicate, $combination);
-            } elseif (is_array($predicate)) {
-
-                foreach ($predicate as $pkey => $pvalue) {
-                    if (is_string($pkey)) {
-                        // Otherwise, if still a string, do something intelligent with the PHP type provided
-                        if (strpos($pkey, '?') !== false) {
-                            $predicate = new Predicate\Expression($pkey, $pvalue);
-                        } elseif ($pvalue === null) {
-                            // map PHP null to SQL IS NULL expression
-                            $predicate = new Predicate\IsNull($pkey, $pvalue);
-                        } elseif (is_array($pvalue)) {
-                            // if the value is an array, assume IN() is desired
-                            $predicate = new Predicate\In($pkey, $pvalue);
-                        } else {
-                            // otherwise assume that array('foo' => 'bar') means "foo" = 'bar'
-                            $predicate = new Predicate\Operator($pkey, $pvalue, Predicate\Operator::OP_EQ);
-                        }
-                    } elseif ($pvalue instanceof Predicate\PredicateInterface) {
-                        // Predicate type is ok
-                        $predicate = $pvalue;
-                    } else {
-                        // must be an array of expressions (with int-indexed array)
-                        $predicate = new Predicate\Expression($pvalue);
-                    }
-                    $this->where->addPredicate($predicate, $combination);
-                }
-            }
+            $this->where->addPredicates($predicate, $combination);
         }
         return $this;
     }
