@@ -55,14 +55,6 @@ interface PlatformInterface
 	public function quoteValue($value);
 
 	/**
-	 * Quote Limit-Offset value
-	 *
-	 * @param  string $value
-	 * @return string
-	 */
-	public function quoteLimitOffset($value);
-
-	/**
 	 * Quote value list
 	 *
 	 * @param string|string[] $valueList

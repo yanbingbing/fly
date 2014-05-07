@@ -904,7 +904,7 @@ class Select extends AbstractSql
 			$sql = $driver->formatParameterName('limit');
 			$parameters->offsetSet('limit', $this->limit, Parameters::TYPE_INTEGER);
 		} else {
-			$sql = $platform->quoteLimitOffset($this->limit);
+			$sql = $platform->quoteValue($this->limit);
 		}
 
 		return array($sql);
@@ -921,7 +921,7 @@ class Select extends AbstractSql
 			return array($driver->formatParameterName('offset'));
 		}
 
-		return array($platform->quoteLimitOffset($this->offset));
+		return array($platform->quoteValue($this->offset));
 	}
 
 	/**

@@ -2,7 +2,7 @@
 /**
  * Fly Framework
  *
- * @copyright Copyright (c) 2013 Bingbing. (http://yanbingbing.com)
+ * @copyright Copyright (c) 2014 Bingbing. (http://yanbingbing.com)
  */
 
 namespace Fly\Db\Adapter;
@@ -12,17 +12,6 @@ use Fly\Cache\Storage\StorageInterface as CacheStorage;
 
 class Adapter implements AdapterInterface
 {
-    /**
-     * Prepare Type Constants
-     */
-    const PREPARE_TYPE_POSITIONAL = 'positional';
-    const PREPARE_TYPE_NAMED = 'named';
-
-    const FUNCTION_FORMAT_PARAMETER_NAME = 'formatParameterName';
-    const FUNCTION_QUOTE_IDENTIFIER = 'quoteIdentifier';
-    const FUNCTION_QUOTE_VALUE = 'quoteValue';
-
-    const VALUE_QUOTE_SEPARATOR = 'quoteSeparator';
 
     /**
      * @var Driver\DriverInterface
@@ -30,7 +19,7 @@ class Adapter implements AdapterInterface
     protected $driver;
 
     /**
-     * @var Platform\PlatformInterface
+     * @var Platform\PlatformInterface|array
      */
     protected $platform;
 
@@ -59,13 +48,7 @@ class Adapter implements AdapterInterface
         $driver->checkEnvironment();
         $this->driver = $driver;
 
-        if ($platform == null) {
-            $platform = $this->createPlatform($parameters);
-        }
-
-        $this->platform = $platform;
-
-        $this->metadata = $this->createMetadata($platform->getName());
+        $this->platform = $platform ?: $parameters;
     }
 
     /**
@@ -87,6 +70,9 @@ class Adapter implements AdapterInterface
      */
     public function getPlatform()
     {
+        if (is_array($this->platform)) {
+            $this->platform = $this->createPlatform($this->platform);
+        }
         return $this->platform;
     }
 
@@ -95,6 +81,9 @@ class Adapter implements AdapterInterface
      */
     public function getMetadata()
     {
+        if (!$this->metadata) {
+            $this->metadata = new Metadata\Metadata($this, self::getMetaCacheStorage());
+        }
         return $this->metadata;
     }
 
@@ -197,21 +186,13 @@ class Adapter implements AdapterInterface
                 'A platform could not be determined from the provided configuration');
         }
 
-        $options = (isset($parameters['platform_options'])) ? $parameters['platform_options'] : array();
-
         switch ($platformName) {
             case 'Mysql':
-                return new Platform\Mysql($options);
+                // mysqli or pdo_mysql driver
+                $driver = ($this->driver instanceof Driver\Mysqli\Mysqli || $this->driver instanceof Driver\Pdo\Pdo) ? $this->driver : null;
+                return new Platform\Mysql($driver);
             default:
-                return new Platform\Sql92($options);
-        }
-    }
-
-    protected function createMetadata($platformName)
-    {
-        switch ($platformName) {
-            case 'MySQL':
-                return new Metadata\Mysql($this, self::getMetaCacheStorage());
+                return new Platform\Sql92();
         }
     }
 
