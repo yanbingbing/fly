@@ -16,6 +16,9 @@ class Uri
     const CHAR_GEN_DELIMS = ':\/\?#\[\]@';
     const CHAR_SUB_DELIMS = '!\$&\'\(\)\*\+,;=';
     const CHAR_RESERVED = ':\/\?#\[\]@!\$&\'\(\)\*\+,;=';
+    /**
+     * Not in the spec - those characters have special meaning in urlencoded query parameters
+     */
     const CHAR_QUERY_DELIMS = '!\$\'\(\)\*\,';
 
     /**
@@ -42,7 +45,7 @@ class Uri
     /**
      * URI port
      *
-     * @var integer
+     * @var int
      */
     protected $port;
 
@@ -69,6 +72,7 @@ class Uri
 
     /**
      * Array of valid schemes.
+     *
      * Subclasses of this class that only accept specific schemes may set the
      * list of accepted schemes here. If not empty, when setScheme() is called
      * it will only accept the schemes listed here.
@@ -79,6 +83,7 @@ class Uri
 
     /**
      * List of default ports per scheme
+     *
      * Inheriting URI classes may set this, and the normalization methods will
      * automatically remove the port if it is equal to the default port for the
      * current scheme
@@ -90,7 +95,7 @@ class Uri
     /**
      * Create a new URI object
      *
-     * @param  Uri|string|null $uri
+     * @param Uri|string|null $uri
      * @throws Exception\InvalidArgumentException
      */
     public function __construct($uri = null)
@@ -116,6 +121,7 @@ class Uri
 
     /**
      * Check if the URI is valid
+     *
      * Note that a relative URI may still be valid
      *
      * @return bool
@@ -141,7 +147,7 @@ class Uri
             return true;
         }
 
-        if (!($this->query || $this->fragment)) {
+        if (! ($this->query || $this->fragment)) {
             // No host, path, query or fragment - this is not a valid URI
             return false;
         }
@@ -168,7 +174,7 @@ class Uri
             return true;
         }
 
-        if (!($this->query || $this->fragment)) {
+        if (! ($this->query || $this->fragment)) {
             // No host, path, query or fragment - this is not a valid URI
             return false;
         }
@@ -187,13 +193,29 @@ class Uri
     }
 
     /**
+     * Reset URI parts
+     */
+    protected function reset()
+    {
+        $this->setScheme(null);
+        $this->setPort(null);
+        $this->setUserInfo(null);
+        $this->setHost(null);
+        $this->setPath(null);
+        $this->setFragment(null);
+        $this->setQuery(null);
+    }
+
+    /**
      * Parse a URI string
      *
-     * @param  string $uri
+     * @param string $uri
      * @return Uri
      */
     public function parse($uri)
     {
+        $this->reset();
+
         // Capture scheme
         if (($scheme = self::parseScheme($uri)) !== null) {
             $this->setScheme($scheme);
@@ -221,7 +243,7 @@ class Uri
                 $portLength = strlen($matches[0]);
                 $port = substr($matches[0], 1);
 
-                $this->setPort((int)$port);
+                $this->setPort((int) $port);
                 $authority = substr($authority, 0, -$portLength);
             }
 
@@ -269,7 +291,9 @@ class Uri
     {
         if (!$this->isValid()) {
             if ($this->isAbsolute() || !$this->isValidRelative()) {
-                throw new Exception\InvalidUriException('URI is not valid and cannot be converted into a string');
+                throw new Exception\InvalidUriException(
+                    'URI is not valid and cannot be converted into a string'
+                );
             }
         }
 
@@ -285,23 +309,23 @@ class Uri
                 $uri .= $this->userInfo . '@';
             }
             $uri .= $this->host;
-            if ($this->port && (!$this->scheme || $this->port != static::$defaultPorts[$this->scheme])) {
+            if ($this->port) {
                 $uri .= ':' . $this->port;
             }
         }
 
         if ($this->path) {
-            $uri .= self::encodePath($this->path);
+            $uri .= static::encodePath($this->path);
         } elseif ($this->host && ($this->query || $this->fragment)) {
             $uri .= '/';
         }
 
         if ($this->query) {
-            $uri .= "?" . self::encodeQueryFragment($this->query);
+            $uri .= "?" . static::encodeQueryFragment($this->query);
         }
 
         if ($this->fragment) {
-            $uri .= "#" . self::encodeQueryFragment($this->fragment);
+            $uri .= "#" . static::encodeQueryFragment($this->fragment);
         }
 
         return $uri;
@@ -309,10 +333,12 @@ class Uri
 
     /**
      * Normalize the URI
+     *
      * Normalizing a URI includes removing any redundant parent directory or
      * current directory references from the path (e.g. foo/bar/../baz becomes
      * foo/baz), normalizing the scheme case, decoding any over-encoded
      * characters etc.
+     *
      * Eventually, two normalized URLs pointing to the same resource should be
      * equal even if they were originally represented by two different strings
      *
@@ -356,13 +382,14 @@ class Uri
     /**
      * Convert a relative URI into an absolute URI using a base absolute URI as
      * a reference.
+     *
      * This is similar to merge() - only it uses the supplied URI as the
      * base reference instead of using the current URI as the base reference.
-     * Merging algorithm is adapted from RFC-3986 section 5.2
-     * (
      *
-     * @link http://tools.ietf.org/html/rfc3986#section-5.2)
-     * @param  Uri|string $baseUri
+     * Merging algorithm is adapted from RFC-3986 section 5.2
+     * (@link http://tools.ietf.org/html/rfc3986#section-5.2)
+     *
+     * @param Uri|string $baseUri
      * @throws Exception\InvalidArgumentException
      * @return Uri
      */
@@ -376,7 +403,9 @@ class Uri
         if (is_string($baseUri)) {
             $baseUri = new static($baseUri);
         } elseif (!$baseUri instanceof Uri) {
-            throw new Exception\InvalidArgumentException('Provided base URI must be a string or a Uri object');
+            throw new Exception\InvalidArgumentException(
+                'Provided base URI must be a string or a Uri object'
+            );
         }
 
         // Merging starts here...
@@ -416,12 +445,14 @@ class Uri
 
     /**
      * Convert the link to a relative link by substracting a base URI
-     *  This is the opposite of resolving a relative link - i.e. creating a
-     *  relative reference link from an original URI and a base URI.
-     *  If the two URIs do not intersect (e.g. the original URI is not in any
-     *  way related to the base URI) the URI will not be modified.
      *
-     * @param  Uri|string $baseUri
+     * This is the opposite of resolving a relative link - i.e. creating a
+     * relative reference link from an original URI and a base URI.
+     *
+     * If the two URIs do not intersect (e.g. the original URI is not in any
+     * way related to the base URI) the URI will not be modified.
+     *
+     * @param Uri|string $baseUri
      * @return Uri
      */
     public function makeRelative($baseUri)
@@ -463,8 +494,10 @@ class Uri
             return $this;
         }
 
-        $pathParts = preg_split('|(/)|', $this->getPath(), null, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
-        $baseParts = preg_split('|(/)|', $baseUri->getPath(), null, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+        $pathParts = preg_split('|(/)|', $this->getPath(), null,
+            PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
+        $baseParts = preg_split('|(/)|', $baseUri->getPath(), null,
+            PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY);
 
         // Get the intersection of existing path parts and those from the
         // provided URI
@@ -522,7 +555,7 @@ class Uri
     /**
      * Get the URI port
      *
-     * @return integer|null
+     * @return int|null
      */
     public function getPort()
     {
@@ -551,6 +584,7 @@ class Uri
 
     /**
      * Return the query string as an associative array of key => value pairs
+     *
      * This is an extension to RFC-3986 but is quite useful when working with
      * most common URI types
      *
@@ -578,22 +612,27 @@ class Uri
 
     /**
      * Set the URI scheme
+     *
      * If the scheme is not valid according to the generic scheme syntax or
      * is not acceptable by the specific URI class (e.g. 'http' or 'https' are
      * the only acceptable schemes for the Zend\Uri\Http class) an exception
      * will be thrown.
+     *
      * You can check if a scheme is valid before setting it using the
      * validateScheme() method.
      *
-     * @param  string $scheme
+     * @param string $scheme
      * @throws Exception\InvalidUriPartException
      * @return Uri
      */
     public function setScheme($scheme)
     {
         if (($scheme !== null) && (!self::validateScheme($scheme))) {
-            throw new Exception\InvalidUriPartException(sprintf('Scheme "%s" is not valid or is not accepted by %s',
-                $scheme, get_called_class()), Exception\InvalidUriPartException::INVALID_SCHEME);
+            throw new Exception\InvalidUriPartException(sprintf(
+                'Scheme "%s" is not valid or is not accepted by %s',
+                $scheme,
+                get_class($this)
+            ), Exception\InvalidUriPartException::INVALID_SCHEME);
         }
 
         $this->scheme = $scheme;
@@ -603,7 +642,7 @@ class Uri
     /**
      * Set the URI User-info part (usually user:password)
      *
-     * @param  string $userInfo
+     * @param string $userInfo
      * @return Uri
      * @throws Exception\InvalidUriPartException If the schema definition
      * does not have this part
@@ -616,26 +655,30 @@ class Uri
 
     /**
      * Set the URI host
+     *
      * Note that the generic syntax for URIs allows using host names which
      * are not necessarily IPv4 addresses or valid DNS host names. For example,
      * IPv6 addresses are allowed as well, and also an abstract "registered name"
      * which may be any name composed of a valid set of characters, including,
      * for example, tilda (~) and underscore (_) which are not allowed in DNS
      * names.
+     *
      * Subclasses of Uri may impose more strict validation of host names - for
      * example the HTTP RFC clearly states that only IPv4 and valid DNS names
      * are allowed in HTTP URIs.
      *
-     * @param  string $host
+     * @param string $host
      * @throws Exception\InvalidUriPartException
      * @return Uri
      */
     public function setHost($host)
     {
-        if (($host !== '') && ($host !== null) && !self::validateHost($host)
-        ) {
-            throw new Exception\InvalidUriPartException(sprintf('Host "%s" is not valid or is not accepted by %s',
-                $host, get_called_class()), Exception\InvalidUriPartException::INVALID_HOSTNAME);
+        if (($host !== '') && ($host !== null) && !self::validateHost($host)) {
+            throw new Exception\InvalidUriPartException(sprintf(
+                'Host "%s" is not valid or is not accepted by %s',
+                $host,
+                get_class($this)
+            ), Exception\InvalidUriPartException::INVALID_HOSTNAME);
         }
 
         $this->host = $host;
@@ -645,7 +688,7 @@ class Uri
     /**
      * Set the port part of the URI
      *
-     * @param  integer $port
+     * @param int $port
      * @return Uri
      */
     public function setPort($port)
@@ -657,7 +700,7 @@ class Uri
     /**
      * Set the path
      *
-     * @param  string $path
+     * @param string $path
      * @return Uri
      */
     public function setPath($path)
@@ -668,11 +711,12 @@ class Uri
 
     /**
      * Set the query string
+     *
      * If an array is provided, will encode this array of parameters into a
      * query string. Array values will be represented in the query string using
      * PHP's common square bracket notation.
      *
-     * @param  string|array $query
+     * @param string|array $query
      * @return Uri
      */
     public function setQuery($query)
@@ -690,7 +734,7 @@ class Uri
     /**
      * Set the URI fragment part
      *
-     * @param  string $fragment
+     * @param string $fragment
      * @return Uri
      * @throws Exception\InvalidUriPartException If the schema definition
      * does not have this part
@@ -721,39 +765,41 @@ class Uri
 
     /**
      * Check if a scheme is valid or not
+     *
      * Will check $scheme to be valid against the generic scheme syntax defined
      * in RFC-3986. If the class also defines specific acceptable schemes, will
      * also check that $scheme is one of them.
      *
-     * @param  string $scheme
+     * @param string $scheme
      * @return bool
      */
     public static function validateScheme($scheme)
     {
-        if (!empty(static::$validSchemes) && !in_array(strtolower($scheme), static::$validSchemes)
+        if (!empty(static::$validSchemes)
+            && !in_array(strtolower($scheme), static::$validSchemes)
         ) {
             return false;
         }
 
-        return (bool)preg_match('/^[A-Za-z][A-Za-z0-9\-\.+]*$/', $scheme);
+        return (bool) preg_match('/^[A-Za-z][A-Za-z0-9\-\.+]*$/', $scheme);
     }
 
     /**
      * Check that the userInfo part of a URI is valid
      *
-     * @param  string $userInfo
+     * @param string $userInfo
      * @return bool
      */
     public static function validateUserInfo($userInfo)
     {
         $regex = '/^(?:[' . self::CHAR_UNRESERVED . self::CHAR_SUB_DELIMS . ':]+|%[A-Fa-f0-9]{2})*$/';
-        return (bool)preg_match($regex, $userInfo);
+        return (bool) preg_match($regex, $userInfo);
     }
 
     /**
      * Validate the host part
      *
-     * @param  string $host
+     * @param string $host
      * @return bool
      */
     public static function validateHost($host)
@@ -763,9 +809,10 @@ class Uri
 
     /**
      * Validate the port
+     *
      * Valid values include numbers between 1 and 65535, and empty values
      *
-     * @param  int $port
+     * @param int $port
      * @return bool
      */
     public static function validatePort($port)
@@ -775,7 +822,7 @@ class Uri
         }
 
         if ($port) {
-            $port = (int)$port;
+            $port = (int) $port;
             if ($port < 1 || $port > 0xffff) {
                 return false;
             }
@@ -787,7 +834,7 @@ class Uri
     /**
      * Validate the path
      *
-     * @param  string $path
+     * @param string $path
      * @return bool
      */
     public static function validatePath($path)
@@ -795,29 +842,31 @@ class Uri
         $pchar = '(?:[' . self::CHAR_UNRESERVED . ':@&=\+\$,]+|%[A-Fa-f0-9]{2})*';
         $segment = $pchar . "(?:;{$pchar})*";
         $regex = "/^{$segment}(?:\/{$segment})*$/";
-        return (bool)preg_match($regex, $path);
+        return (bool) preg_match($regex, $path);
     }
 
     /**
      * Check if a URI query or fragment part is valid or not
+     *
      * Query and Fragment parts are both restricted by the same syntax rules,
      * so the same validation method can be used for both.
+     *
      * You can encode a query or fragment part to ensure it is valid by passing
      * it through the encodeQueryFragment() method.
      *
-     * @param  string $input
+     * @param string $input
      * @return bool
      */
     public static function validateQueryFragment($input)
     {
         $regex = '/^(?:[' . self::CHAR_UNRESERVED . self::CHAR_SUB_DELIMS . ':@\/\?]+|%[A-Fa-f0-9]{2})*$/';
-        return (bool)preg_match($regex, $input);
+        return (bool) preg_match($regex, $input);
     }
 
     /**
      * URL-encode the user info part of a URI
      *
-     * @param  string $userInfo
+     * @param string $userInfo
      * @return string
      * @throws Exception\InvalidArgumentException
      */
@@ -840,10 +889,11 @@ class Uri
 
     /**
      * Encode the path
+     *
      * Will replace all characters which are not strictly allowed in the path
      * part with percent-encoded representation
      *
-     * @param  string $path
+     * @param string $path
      * @throws Exception\InvalidArgumentException
      * @return string
      */
@@ -866,11 +916,12 @@ class Uri
 
     /**
      * URL-encode a query string or fragment based on RFC-3986 guidelines.
+     *
      * Note that query and fragment encoding allows more unencoded characters
      * than the usual rawurlencode() function would usually return - for example
      * '/' and ':' are allowed as literals.
      *
-     * @param  string $input
+     * @param string $input
      * @return string
      * @throws Exception\InvalidArgumentException
      */
@@ -893,19 +944,21 @@ class Uri
 
     /**
      * Extract only the scheme part out of a URI string.
+     *
      * This is used by the parse() method, but is useful as a standalone public
      * method if one wants to test a URI string for it's scheme before doing
      * anything with it.
+     *
      * Will return the scheme if found, or NULL if no scheme found (URI may
      * still be valid, but not full)
      *
-     * @param  string $uriString
+     * @param string $uriString
      * @throws Exception\InvalidArgumentException
      * @return string|null
      */
     public static function parseScheme($uriString)
     {
-        if (!is_string($uriString)) {
+        if (! is_string($uriString)) {
             throw new Exception\InvalidArgumentException(sprintf(
                 'Expecting a string, got %s',
                 (is_object($uriString) ? get_class($uriString) : gettype($uriString))
@@ -922,7 +975,10 @@ class Uri
     /**
      * Remove any extra dot segments (/../, /./) from a path
      *
-     * @param  string $path
+     * Algorithm is adapted from RFC-3986 section 5.2.4
+     * (@link http://tools.ietf.org/html/rfc3986#section-5.2.4)
+     *
+     * @param string $path
      * @return string
      */
     public static function removePathDotSegments($path)
@@ -974,13 +1030,15 @@ class Uri
 
     /**
      * Merge a base URI and a relative URI into a new URI object
+     *
      * This convenience method wraps ::resolve() to allow users to quickly
      * create new absolute URLs without the need to instantiate and clone
      * URI objects.
+     *
      * If objects are passed in, none of the passed objects will be modified.
      *
-     * @param  Uri|string $baseUri
-     * @param  Uri|string $relativeUri
+     * @param Uri|string $baseUri
+     * @param Uri|string $relativeUri
      * @return Uri
      */
     public static function merge($baseUri, $relativeUri)
@@ -992,6 +1050,7 @@ class Uri
 
     /**
      * Part normalization methods
+     *
      * These are called by normalize() using static::_normalize*() so they may
      * be extended or overridden by extending classes to implement additional
      * scheme specific normalization rules
@@ -999,9 +1058,10 @@ class Uri
 
     /**
      * Normalize the scheme
+     *
      * Usually this means simply converting the scheme to lower case
      *
-     * @param  string $scheme
+     * @param string $scheme
      * @return string
      */
     protected static function normalizeScheme($scheme)
@@ -1011,9 +1071,10 @@ class Uri
 
     /**
      * Normalize the host part
+     *
      * By default this converts host names to lower case
      *
-     * @param  string $host
+     * @param string $host
      * @return string
      */
     protected static function normalizeHost($host)
@@ -1023,16 +1084,19 @@ class Uri
 
     /**
      * Normalize the port
+     *
      * If the class defines a default port for the current scheme, and the
      * current port is default, it will be unset.
      *
-     * @param  integer $port
-     * @param  string $scheme
-     * @return integer|null
+     * @param int $port
+     * @param string $scheme
+     * @return int|null
      */
     protected static function normalizePort($port, $scheme = null)
     {
-        if ($scheme && isset(static::$defaultPorts[$scheme]) && ($port == static::$defaultPorts[$scheme])
+        if ($scheme
+            && isset(static::$defaultPorts[$scheme])
+            && ($port == static::$defaultPorts[$scheme])
         ) {
             return null;
         }
@@ -1104,6 +1168,7 @@ class Uri
 
     /**
      * Decode all percent encoded characters which are allowed to be represented literally
+     *
      * Will not decode any characters which are not listed in the 'allowed' list
      *
      * @param string $input
