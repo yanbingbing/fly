@@ -14,6 +14,7 @@ class Parameters implements \Iterator, \ArrayAccess, \Countable
     const TYPE_NULL = 'null';
     const TYPE_DOUBLE = 'double';
     const TYPE_INTEGER = 'integer';
+    const TYPE_BINARY = 'binary';
     const TYPE_STRING = 'string';
     const TYPE_LOB = 'lob';
 
@@ -51,8 +52,8 @@ class Parameters implements \Iterator, \ArrayAccess, \Countable
     /**
      * Offset exists
      *
-     * @param  string $name
-     * @return boolean
+     * @param string $name
+     * @return bool
      */
     public function offsetExists($name)
     {
@@ -62,7 +63,7 @@ class Parameters implements \Iterator, \ArrayAccess, \Countable
     /**
      * Offset get
      *
-     * @param  string $name
+     * @param string $name
      * @return mixed
      */
     public function offsetGet($name)
@@ -96,14 +97,14 @@ class Parameters implements \Iterator, \ArrayAccess, \Countable
                 $position = $name;
                 $name = $this->positions[$name];
             } else {
-                $name = (string)$name;
+                $name = (string) $name;
             }
         } elseif (is_string($name)) {
             // is a string:
             $currentNames = array_keys($this->data);
             $position = array_search($name, $currentNames, true);
         } elseif ($name === null) {
-            $name = (string)count($this->data);
+            $name = (string) count($this->data);
         } else {
             throw new Exception\InvalidArgumentException('Keys must be string, integer or null');
         }
@@ -122,7 +123,7 @@ class Parameters implements \Iterator, \ArrayAccess, \Countable
     /**
      * Offset unset
      *
-     * @param  string $name
+     * @param string $name
      * @return $this
      */
     public function offsetUnset($name)
@@ -137,7 +138,7 @@ class Parameters implements \Iterator, \ArrayAccess, \Countable
     /**
      * Set from array
      *
-     * @param  array $data
+     * @param array $data
      * @return $this
      */
     public function setFromArray(Array $data)
@@ -151,7 +152,7 @@ class Parameters implements \Iterator, \ArrayAccess, \Countable
     /**
      * Offset set errata
      *
-     * @param string|integer $name
+     * @param string|int $name
      * @param mixed $errata
      */
     public function offsetSetErrata($name, $errata)
@@ -165,7 +166,7 @@ class Parameters implements \Iterator, \ArrayAccess, \Countable
     /**
      * Offset get errata
      *
-     * @param  string|integer $name
+     * @param string|int $name
      * @throws Exception\InvalidArgumentException
      * @return mixed
      */
@@ -183,8 +184,8 @@ class Parameters implements \Iterator, \ArrayAccess, \Countable
     /**
      * Offset has errata
      *
-     * @param  string|integer $name
-     * @return boolean
+     * @param string|int $name
+     * @return bool
      */
     public function offsetHasErrata($name)
     {
@@ -197,7 +198,7 @@ class Parameters implements \Iterator, \ArrayAccess, \Countable
     /**
      * Offset unset errata
      *
-     * @param string|integer $name
+     * @param string|int $name
      * @throws Exception\InvalidArgumentException
      */
     public function offsetUnsetErrata($name)
@@ -244,7 +245,7 @@ class Parameters implements \Iterator, \ArrayAccess, \Countable
     /**
      * count
      *
-     * @return integer
+     * @return int
      */
     public function count()
     {
@@ -284,7 +285,7 @@ class Parameters implements \Iterator, \ArrayAccess, \Countable
     /**
      * Valid
      *
-     * @return boolean
+     * @return bool
      */
     public function valid()
     {
@@ -300,7 +301,7 @@ class Parameters implements \Iterator, \ArrayAccess, \Countable
     }
 
     /**
-     * @param array|Parameters $parameters
+     * @param array|self $parameters
      * @throws Exception\InvalidArgumentException
      * @return $this
      */
@@ -308,7 +309,7 @@ class Parameters implements \Iterator, \ArrayAccess, \Countable
     {
         if (!is_array($parameters) && !$parameters instanceof self) {
             throw new Exception\InvalidArgumentException(
-                '$parameters must be an array or an instance of ParameterContainer');
+                '$parameters must be an array or an instance of Parameters');
         }
 
         if (count($parameters) == 0) {
