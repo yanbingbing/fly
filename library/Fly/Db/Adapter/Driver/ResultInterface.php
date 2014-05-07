@@ -33,7 +33,7 @@ interface ResultInterface extends \Countable, \Iterator
     /**
      * Get affected rows
      *
-     * @return integer
+     * @return int
      */
     public function getAffectedRows();
 
@@ -54,7 +54,7 @@ interface ResultInterface extends \Countable, \Iterator
     /**
      * Get field count
      *
-     * @return integer
+     * @return int
      */
     public function getFieldCount();
 }

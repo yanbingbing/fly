@@ -30,7 +30,7 @@ class Statement implements StatementInterface
     protected $sql = '';
 
     /**
-     * @var boolean
+     * @var bool
      */
     protected $isQuery = null;
 
@@ -50,14 +50,14 @@ class Statement implements StatementInterface
     protected $resource = null;
 
     /**
-     * @var boolean
+     * @var bool
      */
     protected $isPrepared = false;
 
     /**
      * Set driver
      *
-     * @param  Pdo $driver
+     * @param Pdo $driver
      * @return $this
      */
     public function setDriver(Pdo $driver)
@@ -69,7 +69,7 @@ class Statement implements StatementInterface
     /**
      * Initialize
      *
-     * @param  \PDO $connectionResource
+     * @param \PDO $connectionResource
      * @return $this
      */
     public function initialize(\PDO $connectionResource)
@@ -81,7 +81,7 @@ class Statement implements StatementInterface
     /**
      * Set resource
      *
-     * @param  \PDOStatement $pdoStatement
+     * @param \PDOStatement $pdoStatement
      * @return $this
      */
     public function setResource(\PDOStatement $pdoStatement)
@@ -209,8 +209,11 @@ class Statement implements StatementInterface
             if (in_array($code, array(1060, 1061, 1062))) {
                 throw new Exception\DuplicateException($message, $code, $e);
             }
-
-            throw new Exception\InvalidQueryException($message, $code, $e);
+            throw new Exception\InvalidQueryException(
+                'Statement could not be executed (' . implode(' - ', $this->resource->errorInfo()) . ')',
+                null,
+                $e
+            );
         }
 
         $result = $this->driver->createResult($this->resource, $this);
@@ -218,7 +221,7 @@ class Statement implements StatementInterface
     }
 
     /**
-     * Bind parameters from container
+     * Bind parameters
      */
     protected function bindParameters()
     {
@@ -228,7 +231,13 @@ class Statement implements StatementInterface
 
         $parameters = $this->parameters->getNamedArray();
         foreach ($parameters as $name => &$value) {
-            $type = \PDO::PARAM_STR;
+            if (is_bool($value)) {
+                $type = \PDO::PARAM_BOOL;
+            } elseif (is_int($value)) {
+                $type = \PDO::PARAM_INT;
+            } else {
+                $type = \PDO::PARAM_STR;
+            }
             if ($this->parameters->offsetHasErrata($name)) {
                 switch ($this->parameters->offsetGetErrata($name)) {
                     case Parameters::TYPE_INTEGER:
@@ -239,9 +248,6 @@ class Statement implements StatementInterface
                         break;
                     case Parameters::TYPE_LOB:
                         $type = \PDO::PARAM_LOB;
-                        break;
-                    case (is_bool($value)):
-                        $type = \PDO::PARAM_BOOL;
                         break;
                 }
             }
@@ -255,8 +261,7 @@ class Statement implements StatementInterface
 
     /**
      * Perform a deep clone
-     *
-     * @return Statement A cloned statement
+     * @return self A cloned statement
      */
     public function __clone()
     {

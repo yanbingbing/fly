@@ -38,6 +38,11 @@ class Connection implements ConnectionInterface
     protected $inTransaction = false;
 
     /**
+     * @var string
+     */
+    protected $dsn = null;
+
+    /**
      * Constructor
      *
      * @param array|\PDO|null $connectionParameters
@@ -50,8 +55,7 @@ class Connection implements ConnectionInterface
         } elseif ($connectionParameters instanceof \PDO) {
             $this->setResource($connectionParameters);
         } elseif (null !== $connectionParameters) {
-            throw new Exception\InvalidArgumentException(
-                '$connection must be an array of parameters, a PDO object or null');
+            throw new Exception\InvalidArgumentException('$connection must be an array of parameters, a PDO object or null');
         }
     }
 
@@ -87,12 +91,16 @@ class Connection implements ConnectionInterface
     {
         $this->connectionParameters = $connectionParameters;
         if (isset($connectionParameters['dsn'])) {
-            $this->driverName = substr($connectionParameters['dsn'], 0, strpos($connectionParameters['dsn'], ':'));
+            $this->driverName = substr($connectionParameters['dsn'], 0,
+                strpos($connectionParameters['dsn'], ':')
+            );
         } elseif (isset($connectionParameters['pdodriver'])) {
             $this->driverName = strtolower($connectionParameters['pdodriver']);
         } elseif (isset($connectionParameters['driver'])) {
-            $this->driverName = strtolower(substr(str_replace(
-                array('-', '_', ' '), '', $connectionParameters['driver']), 3));
+            $this->driverName = strtolower(substr(
+                str_replace(array('-', '_', ' '), '', $connectionParameters['driver']),
+                3
+            ));
         }
     }
 
@@ -104,6 +112,20 @@ class Connection implements ConnectionInterface
     public function getConnectionParameters()
     {
         return $this->connectionParameters;
+    }
+
+    /**
+     * Get the dsn string for this connection
+     * @throws Exception\RunTimeException
+     * @return string
+     */
+    public function getDsn()
+    {
+        if (!$this->dsn) {
+            throw new Exception\RunTimeException("The DSN has not been set or constructed from parameters in connect() for this Connection");
+        }
+
+        return $this->dsn;
     }
 
     /**
@@ -129,6 +151,7 @@ class Connection implements ConnectionInterface
                 break;
         }
 
+        /** @var $result \PDOStatement */
         $result = $this->resource->query($sql);
         if ($result instanceof \PDOStatement) {
             return $result->fetchColumn();
@@ -139,7 +162,7 @@ class Connection implements ConnectionInterface
     /**
      * Set resource
      *
-     * @param  \PDO $resource
+     * @param \PDO $resource
      * @return $this
      */
     public function setResource(\PDO $resource)
@@ -156,6 +179,9 @@ class Connection implements ConnectionInterface
      */
     public function getResource()
     {
+        if (!$this->isConnected()) {
+            $this->connect();
+        }
         return $this->resource;
     }
 
@@ -186,33 +212,33 @@ class Connection implements ConnectionInterface
                     }
                     break;
                 case 'pdodriver':
-                    $pdoDriver = (string)$value;
+                    $pdoDriver = (string) $value;
                     break;
                 case 'user':
                 case 'username':
-                    $username = (string)$value;
+                    $username = (string) $value;
                     break;
                 case 'pass':
                 case 'password':
-                    $password = (string)$value;
+                    $password = (string) $value;
                     break;
                 case 'host':
                 case 'hostname':
-                    $hostname = (string)$value;
+                    $hostname = (string) $value;
                     break;
                 case 'port':
-                    $port = (int)$value;
+                    $port = (int) $value;
                     break;
                 case 'database':
                 case 'dbname':
-                    $database = (string)$value;
+                    $database = (string) $value;
                     break;
                 case 'charset':
-                    $charset = (string)$value;
+                    $charset = (string) $value;
                     break;
                 case 'driver_options':
                 case 'options':
-                    $value = (array)$value;
+                    $value = (array) $value;
                     $options = array_diff_key($options, $value) + $value;
                     break;
                 default:
@@ -250,12 +276,18 @@ class Connection implements ConnectionInterface
             );
         }
 
+        $this->dsn = $dsn;
+
         try {
             $this->resource = new \PDO($dsn, $username, $password, $options);
             $this->resource->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
             $this->driverName = strtolower($this->resource->getAttribute(\PDO::ATTR_DRIVER_NAME));
         } catch (\PDOException $e) {
-            throw new Exception\RuntimeException('Connect Error: ' . $e->getMessage(), $e->getCode(), $e);
+            $code = $e->getCode();
+            if (!is_long($code)) {
+                $code = null;
+            }
+            throw new Exception\RuntimeException('Connect Error: ' . $e->getMessage(), $code, $e);
         }
 
         return $this;
@@ -297,6 +329,16 @@ class Connection implements ConnectionInterface
         $this->resource->beginTransaction();
         $this->inTransaction = true;
         return $this;
+    }
+
+    /**
+     * In transaction
+     *
+     * @return bool
+     */
+    public function inTransaction()
+    {
+        return $this->inTransaction;
     }
 
     /**
@@ -360,26 +402,10 @@ class Connection implements ConnectionInterface
     }
 
     /**
-     * Prepare
-     *
-     * @param string $sql
-     * @return Statement
-     */
-    public function prepare($sql)
-    {
-        if (!$this->isConnected()) {
-            $this->connect();
-        }
-
-        $statement = $this->driver->createStatement($sql);
-        return $statement;
-    }
-
-    /**
      * Get last generated id
      *
      * @param string $name
-     * @return int|null|bool
+     * @return string|null|false
      */
     public function getLastGeneratedValue($name = null)
     {

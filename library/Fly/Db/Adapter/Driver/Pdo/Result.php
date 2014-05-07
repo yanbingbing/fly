@@ -33,21 +33,18 @@ class Result implements ResultInterface
 
     /**
      * Is the current complete?
-     *
      * @var bool
      */
     protected $currentComplete = false;
 
     /**
      * Track current item in recordset
-     *
      * @var mixed
      */
     protected $currentData = null;
 
     /**
      * Current position of scrollable statement
-     *
      * @var int
      */
     protected $position = -1;
@@ -65,9 +62,9 @@ class Result implements ResultInterface
     /**
      * Initialize
      *
-     * @param  \PDOStatement $resource
-     * @param               $generatedValue
-     * @param  int $rowCount
+     * @param \PDOStatement $resource
+     * @param $generatedValue
+     * @param int $rowCount
      * @return Result
      */
     public function initialize(\PDOStatement $resource, $generatedValue, $rowCount = null)
@@ -75,6 +72,7 @@ class Result implements ResultInterface
         $this->resource = $resource;
         $this->generatedValue = $generatedValue;
         $this->rowCount = $rowCount;
+
         return $this;
     }
 
@@ -116,6 +114,7 @@ class Result implements ResultInterface
         }
 
         $this->currentData = $this->resource->fetch(\PDO::FETCH_ASSOC);
+        $this->currentComplete = true;
         return $this->currentData;
     }
 
@@ -150,7 +149,8 @@ class Result implements ResultInterface
     {
         if ($this->statementMode == self::STATEMENT_MODE_FORWARD && $this->position > 0) {
             throw new Exception\RuntimeException(
-                'This result is a forward only result set, calling rewind() after moving forward is not supported');
+                'This result is a forward only result set, calling rewind() after moving forward is not supported'
+            );
         }
         $this->currentData = $this->resource->fetch(\PDO::FETCH_ASSOC);
         $this->currentComplete = true;
@@ -160,7 +160,7 @@ class Result implements ResultInterface
     /**
      * Valid
      *
-     * @return boolean
+     * @return bool
      */
     public function valid()
     {
@@ -170,12 +170,17 @@ class Result implements ResultInterface
     /**
      * Count
      *
-     * @return integer
+     * @return int
      */
     public function count()
     {
-        if (!is_int($this->rowCount)) {
-            $this->rowCount = (int)$this->resource->rowCount();
+        if (is_int($this->rowCount)) {
+            return $this->rowCount;
+        }
+        if ($this->rowCount instanceof \Closure) {
+            $this->rowCount = (int) call_user_func($this->rowCount);
+        } else {
+            $this->rowCount = (int) $this->resource->rowCount();
         }
         return $this->rowCount;
     }
@@ -191,7 +196,7 @@ class Result implements ResultInterface
     /**
      * Is query result
      *
-     * @return boolean
+     * @return bool
      */
     public function isQueryResult()
     {
@@ -201,7 +206,7 @@ class Result implements ResultInterface
     /**
      * Get affected rows
      *
-     * @return integer
+     * @return int
      */
     public function getAffectedRows()
     {

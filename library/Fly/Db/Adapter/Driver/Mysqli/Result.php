@@ -25,21 +25,18 @@ class Result implements ResultInterface
 
     /**
      * Cursor position
-     *
      * @var int
      */
     protected $position = 0;
 
     /**
      * Number of known rows
-     *
      * @var int
      */
     protected $numberOfRows = -1;
 
     /**
      * Is the current() operation already complete for this pointer position?
-     *
      * @var bool
      */
     protected $currentComplete = false;
@@ -85,8 +82,8 @@ class Result implements ResultInterface
             $this->isBuffered = $isBuffered;
         } else {
             if ($resource instanceof \mysqli || $resource instanceof \mysqli_result
-                || $resource instanceof \mysqli_stmt && $resource->num_rows != 0
-            ) {
+                || $resource instanceof \mysqli_stmt && $resource->num_rows != 0)
+            {
                 $this->isBuffered = true;
             }
         }
@@ -145,7 +142,7 @@ class Result implements ResultInterface
     /**
      * Get affected rows
      *
-     * @return integer
+     * @return int
      */
     public function getAffectedRows()
     {
@@ -178,10 +175,11 @@ class Result implements ResultInterface
 
     /**
      * Mysqli's binding and returning of statement values
-     * Mysqli requires you to bind variables to the extension in order to
-     * get data out.  These values have to be references:
      *
+     * Mysqli requires you to bind variables to the extension in order to
+     * get data out. These values have to be references:
      * @see http://php.net/manual/en/mysqli-stmt.bind-result.php
+     *
      * @throws Exception\RuntimeException
      * @return bool
      */
@@ -199,7 +197,7 @@ class Result implements ResultInterface
             $this->statementBindValues['values'] = array_fill(0, count($this->statementBindValues['keys']), null);
             $refs = array();
             foreach ($this->statementBindValues['values'] as $i => &$f) {
-                $refs[$i] = & $f;
+                $refs[$i] = &$f;
             }
             call_user_func_array(array($this->resource, 'bind_result'), $this->statementBindValues['values']);
         }
@@ -310,7 +308,7 @@ class Result implements ResultInterface
      * Count
      *
      * @throws Exception\RuntimeException
-     * @return integer
+     * @return int
      */
     public function count()
     {
@@ -323,7 +321,7 @@ class Result implements ResultInterface
     /**
      * Get field count
      *
-     * @return integer
+     * @return int
      */
     public function getFieldCount()
     {

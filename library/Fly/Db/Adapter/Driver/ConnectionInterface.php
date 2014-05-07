@@ -52,6 +52,13 @@ interface ConnectionInterface
     public function beginTransaction();
 
     /**
+     * In transaction
+     *
+     * @return bool
+     */
+    public function inTransaction();
+
+    /**
      * Commit
      *
      * @return $this
@@ -68,24 +75,16 @@ interface ConnectionInterface
     /**
      * Execute
      *
-     * @param  string $sql
+     * @param string $sql
      * @return ResultInterface
      */
     public function execute($sql);
 
     /**
-     * Prepare
-     *
-     * @param string $sql
-     * @return StatementInterface
-     */
-    public function prepare($sql);
-
-    /**
      * Get last generated id
      *
-     * @param  null $name Ignored
-     * @return integer
+     * @param null $name Ignored
+     * @return int
      */
     public function getLastGeneratedValue($name = null);
 }

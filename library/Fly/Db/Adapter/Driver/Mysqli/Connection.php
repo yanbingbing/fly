@@ -68,7 +68,7 @@ class Connection implements ConnectionInterface
     /**
      * Set connection parameters
      *
-     * @param  array $connectionParameters
+     * @param array $connectionParameters
      * @return $this
      */
     public function setConnectionParameters(array $connectionParameters)
@@ -107,7 +107,7 @@ class Connection implements ConnectionInterface
     /**
      * Set resource
      *
-     * @param  \mysqli $resource
+     * @param \mysqli $resource
      * @return $this
      */
     public function setResource(\mysqli $resource)
@@ -156,7 +156,7 @@ class Connection implements ConnectionInterface
         $username = $findParameterValue(array('username', 'user'));
         $password = $findParameterValue(array('password', 'passwd', 'pw'));
         $database = $findParameterValue(array('database', 'dbname', 'db', 'schema'));
-        $port = (isset($p['port'])) ? (int)$p['port'] : null;
+        $port = (isset($p['port'])) ? (int) $p['port'] : null;
         $socket = (isset($p['socket'])) ? $p['socket'] : null;
 
         $this->resource = new \mysqli();
@@ -179,7 +179,8 @@ class Connection implements ConnectionInterface
 
         if ($this->resource->connect_error) {
             throw new Exception\RuntimeException(
-                'Connection error', null,
+                'Connection error',
+                null,
                 new Exception\ErrorException($this->resource->connect_error, $this->resource->connect_errno)
             );
         }
@@ -211,7 +212,7 @@ class Connection implements ConnectionInterface
         if ($this->resource instanceof \mysqli) {
             $this->resource->close();
         }
-        unset($this->resource);
+        $this->resource = null;
         return $this;
     }
 
@@ -232,6 +233,16 @@ class Connection implements ConnectionInterface
     }
 
     /**
+     * In transaction
+     *
+     * @return bool
+     */
+    public function inTransaction()
+    {
+        return $this->inTransaction;
+    }
+
+    /**
      * Commit
      *
      * @return $this
@@ -243,8 +254,8 @@ class Connection implements ConnectionInterface
         }
 
         $this->resource->commit();
-
         $this->inTransaction = false;
+        $this->resource->autocommit(true);
         return $this;
     }
 
@@ -261,17 +272,18 @@ class Connection implements ConnectionInterface
         }
 
         if (!$this->inTransaction) {
-            throw new Exception\RuntimeException('Must call commit() before you can rollback.');
+            throw new Exception\RuntimeException('Must call beginTransaction() before you can rollback.');
         }
 
         $this->resource->rollback();
+        $this->resource->autocommit(true);
         return $this;
     }
 
     /**
      * Execute
      *
-     * @param  string $sql
+     * @param string $sql
      * @throws Exception\InvalidQueryException
      * @return Result
      */
@@ -293,26 +305,10 @@ class Connection implements ConnectionInterface
     }
 
     /**
-     * Prepare
-     *
-     * @param string $sql
-     * @return Statement
-     */
-    public function prepare($sql)
-    {
-        if (!$this->isConnected()) {
-            $this->connect();
-        }
-
-        $statement = $this->driver->createStatement($sql);
-        return $statement;
-    }
-
-    /**
      * Get last generated id
      *
-     * @param  null $name Ignored
-     * @return integer
+     * @param null $name Ignored
+     * @return int
      */
     public function getLastGeneratedValue($name = null)
     {

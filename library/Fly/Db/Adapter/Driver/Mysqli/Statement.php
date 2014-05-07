@@ -54,17 +54,17 @@ class Statement implements StatementInterface
     protected $bufferResults = false;
 
     /**
-     * @param  bool $bufferResults
+     * @param bool $bufferResults
      */
     public function __construct($bufferResults = false)
     {
-        $this->bufferResults = (bool)$bufferResults;
+        $this->bufferResults = (bool) $bufferResults;
     }
 
     /**
      * Set driver
      *
-     * @param  Mysqli $driver
+     * @param Mysqli $driver
      * @return $this
      */
     public function setDriver(Mysqli $driver)
@@ -76,7 +76,7 @@ class Statement implements StatementInterface
     /**
      * Initialize
      *
-     * @param  \mysqli $mysqli
+     * @param \mysqli $mysqli
      * @return $this
      */
     public function initialize(\mysqli $mysqli)
@@ -88,7 +88,7 @@ class Statement implements StatementInterface
     /**
      * Set sql
      *
-     * @param  string $sql
+     * @param string $sql
      * @return $this
      */
     public function setSql($sql)
@@ -122,7 +122,7 @@ class Statement implements StatementInterface
     /**
      * Set resource
      *
-     * @param  \mysqli_stmt $mysqliStatement
+     * @param \mysqli_stmt $mysqliStatement
      * @return $this
      */
     public function setResource(\mysqli_stmt $mysqliStatement)
@@ -176,12 +176,13 @@ class Statement implements StatementInterface
             throw new Exception\RuntimeException('This statement has already been prepared');
         }
 
-        $sql = ($sql) ? : $this->sql;
+        $sql = ($sql) ?: $this->sql;
 
-        $this->resource = $this->mysqli->prepare($this->sql);
+        $this->resource = $this->mysqli->prepare($sql);
         if (!$this->resource instanceof \mysqli_stmt) {
             throw new Exception\InvalidQueryException(
-                'Statement couldn\'t be produced with sql: ' . $sql, null,
+                'Statement couldn\'t be produced with sql: ' . $sql,
+                null,
                 new Exception\ErrorException($this->mysqli->error, $this->mysqli->errno)
             );
         }
@@ -223,10 +224,6 @@ class Statement implements StatementInterface
         $return = $this->resource->execute();
 
         if ($return === false) {
-            if (in_array($this->resource->errno, array(1060, 1061, 1062))) {
-                throw new Exception\DuplicateException($this->resource->error, $this->resource->errno);
-            }
-
             throw new Exception\RuntimeException($this->resource->error);
         }
 
@@ -243,7 +240,7 @@ class Statement implements StatementInterface
     }
 
     /**
-     * Bind parameters from container
+     * Bind parameters
      *
      * @return void
      */
@@ -272,7 +269,7 @@ class Statement implements StatementInterface
             } else {
                 $type .= 's';
             }
-            $args[] = & $value;
+            $args[] = &$value;
         }
 
         if ($args) {

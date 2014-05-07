@@ -39,14 +39,14 @@ class Pdo implements DriverInterface
         }
 
         $this->registerConnection($connection);
-        $this->registerStatementPrototype(($statementPrototype) ? : new Statement);
-        $this->registerResultPrototype(($resultPrototype) ? : new Result);
+        $this->registerStatementPrototype(($statementPrototype) ?: new Statement());
+        $this->registerResultPrototype(($resultPrototype) ?: new Result());
     }
 
     /**
      * Register connection
      *
-     * @param  Connection $connection
+     * @param Connection $connection
      * @return Pdo
      */
     public function registerConnection(Connection $connection)
@@ -80,7 +80,7 @@ class Pdo implements DriverInterface
     /**
      * Get database platform name
      *
-     * @param  string $nameFormat
+     * @param string $nameFormat
      * @return string
      */
     public function getDatabasePlatformName($nameFormat = self::NAME_FORMAT_CAMELCASE)
@@ -175,9 +175,9 @@ class Pdo implements DriverInterface
     /**
      * @return mixed
      */
-    public function getLastGeneratedValue()
+    public function getLastGeneratedValue($name = null)
     {
-        return $this->connection->getLastGeneratedValue();
+        return $this->connection->getLastGeneratedValue($name);
     }
 
 }

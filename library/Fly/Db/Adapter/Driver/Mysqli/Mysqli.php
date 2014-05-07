@@ -31,7 +31,9 @@ class Mysqli implements DriverInterface
     /**
      * @var array
      */
-    protected $options = array('buffer_results' => false);
+    protected $options = array(
+        'buffer_results' => false
+    );
 
     /**
      * Constructor
@@ -51,14 +53,14 @@ class Mysqli implements DriverInterface
         $options = array_intersect_key(array_merge($this->options, $options), $this->options);
 
         $this->registerConnection($connection);
-        $this->registerStatementPrototype(($statementPrototype) ? : new Statement($options['buffer_results']));
-        $this->registerResultPrototype(($resultPrototype) ? : new Result());
+        $this->registerStatementPrototype(($statementPrototype) ?: new Statement($options['buffer_results']));
+        $this->registerResultPrototype(($resultPrototype) ?: new Result());
     }
 
     /**
      * Register connection
      *
-     * @param  Connection $connection
+     * @param Connection $connection
      * @return $this
      */
     public function registerConnection(Connection $connection)
@@ -110,7 +112,7 @@ class Mysqli implements DriverInterface
     /**
      * Get database platform name
      *
-     * @param  string $nameFormat
+     * @param string $nameFormat
      * @return string
      */
     public function getDatabasePlatformName($nameFormat = self::NAME_FORMAT_CAMELCASE)
