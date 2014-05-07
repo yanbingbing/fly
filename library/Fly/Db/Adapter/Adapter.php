@@ -96,7 +96,7 @@ class Adapter implements AdapterInterface
      */
     public function query($stmt, $parameters = null)
     {
-        if (!$stmt instanceof Driver\StatementInterface) {
+        if (!($stmt instanceof Driver\StatementInterface)) {
             $stmt = $this->driver->createStatement($stmt);
         }
 
@@ -117,7 +117,7 @@ class Adapter implements AdapterInterface
     public function createStatement($sql = null, $parameters = null)
     {
         $statement = $this->driver->createStatement($sql);
-        if ($parameters == null || !$parameters instanceof Parameters && is_array($parameters)) {
+        if ($parameters == null || !($parameters instanceof Parameters) && is_array($parameters)) {
             $parameters = new Parameters((is_array($parameters) ? $parameters : array()));
         }
         $statement->setParameters($parameters);
