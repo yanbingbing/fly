@@ -9,7 +9,7 @@ namespace Fly\Db\Row;
 
 interface RowInterface
 {
-	public function save();
+    public function save();
 
-	public function delete();
+    public function delete();
 }
