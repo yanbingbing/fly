@@ -17,6 +17,15 @@ class RowLoader
 
     protected $paths = array();
 
+    public function __construct(array $paths = null)
+    {
+        if ($paths) {
+            foreach ($paths as $ns => $path) {
+                $this->registerPath($path, $ns);
+            }
+        }
+    }
+
     /**
      * Register a path of Row
      *

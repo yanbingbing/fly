@@ -8,8 +8,8 @@
 namespace Fly\Db\Table;
 
 use Fly\Db\Adapter\Adapter;
+use Fly\Db\Row\RowLoader;
 use Fly\Db\Sql\TableIdentifier;
-use Fly\MountManager\MountManager;
 
 class Table extends AbstractTable
 {
@@ -52,9 +52,37 @@ class Table extends AbstractTable
 
     protected function setupRowPrototype($rowPrototype)
     {
-        if (!$rowPrototype && ($loader = MountManager::getInstance()->get('RowLoader'))) {
-            $rowPrototype = $loader->get($this->getTable()->getTable());
+        $this->rowPrototype = $rowPrototype ?: self::getRowPrototype($this->getTable()->getTable());
+    }
+
+    /** @var callable|array|RowLoader */
+    protected static $rowLoader;
+    public static function setRowLoader($loader)
+    {
+        self::$rowLoader = $loader;
+    }
+
+    protected static function getRowPrototype($table)
+    {
+        if (!self::$rowLoader) {
+            return null;
         }
-        $this->rowPrototype = $rowPrototype;
+        if (is_callable(self::$rowLoader)) {
+            $factory = self::$rowLoader;
+            try {
+                $instance = $factory();
+            } catch (\Exception $e) {
+                throw new Exception\RuntimeException(
+                    'An exception was raised while creating rowLoader', $e->getCode(), $e
+                );
+            }
+            self::$rowLoader = $instance;
+        } elseif (is_array(self::$rowLoader)) {
+            self::$rowLoader = new RowLoader(self::$rowLoader);
+        }
+        if (self::$rowLoader instanceof RowLoader) {
+            return self::$rowLoader->get($table);
+        }
+        return null;
     }
 }

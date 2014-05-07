@@ -17,7 +17,6 @@ class Select extends AbstractSql
 {
     /**#@+
      * Constant
-     *
      * @const
      */
     const SELECT = 'select';
@@ -109,7 +108,7 @@ class Select extends AbstractSql
     protected $where = null;
 
     /**
-     * @var null|string
+     * @var array
      */
     protected $order = array();
 
@@ -136,7 +135,7 @@ class Select extends AbstractSql
     /**
      * Constructor
      *
-     * @param  string|array|TableIdentifier $table
+     * @param null|string|array|TableIdentifier $table
      */
     public function __construct($table = null)
     {
@@ -152,7 +151,7 @@ class Select extends AbstractSql
     /**
      * Create from clause
      *
-     * @param  string|array|TableIdentifier $table
+     * @param string|array|TableIdentifier $table
      * @throws Exception\InvalidArgumentException
      * @return $this
      */
@@ -193,19 +192,22 @@ class Select extends AbstractSql
 
     /**
      * Specify columns from which to select
-     * Possible valid states:
-     *   array(*)
-     *   array(value, ...)
-     *     value can be strings or Expression objects
-     *   array(string => value, ...)
-     *     key string will be use as alias,
-     *     value can be string or Expression objects
-     *   "column1, expr() as column2"
      *
-     * @param  string|Expression|array $columns
-     * @return $this
+     * Possible valid states:
+     *
+     * array(*)
+     *
+     * array(value, ...)
+     * value can be strings or Expression objects
+     *
+     * array(string => value, ...)
+     * key string will be use as alias,
+     * value can be string or Expression objects
+     *
+     * @param array $columns
+     * @return Select
      */
-    public function columns($columns)
+    public function columns(array $columns)
     {
         if (is_string($columns)) {
             $columns = $this->splitColumns($columns);
@@ -279,8 +281,7 @@ class Select extends AbstractSql
     {
         if (is_array($name) && (!is_string(key($name)) || count($name) !== 1)) {
             throw new Exception\InvalidArgumentException(
-                sprintf("join() expects '%s' as an array is a single element associative array",
-                    array_shift($name))
+                sprintf("join() expects '%s' as an array is a single element associative array", array_shift($name))
             );
         }
         if (empty($columns)) {
@@ -332,47 +333,8 @@ class Select extends AbstractSql
     {
         if ($predicate instanceof Where) {
             $this->where = $predicate;
-        } elseif ($predicate instanceof Predicate\PredicateInterface) {
-            $this->where->addPredicate($predicate, $combination);
-        } elseif ($predicate instanceof \Closure) {
-            $predicate($this->where);
         } else {
-            if (is_string($predicate)) {
-                // String $predicate should be passed as an expression
-                $predicate = (strpos($predicate, Expression::PLACEHOLDER) !== false)
-                    ? new Predicate\Expression($predicate) : new Predicate\Literal($predicate);
-                $this->where->addPredicate($predicate, $combination);
-            } elseif (is_array($predicate)) {
-
-                foreach ($predicate as $pkey => $pvalue) {
-                    if (is_string($pkey)) {
-                        if (strpos($pkey, '?') !== false) {
-                            $predicate = new Predicate\Expression($pkey, $pvalue);
-                        } elseif ($pvalue === null) {
-                            // map PHP null to SQL IS NULL expression
-                            $predicate = new Predicate\IsNull($pkey, $pvalue);
-                        } elseif (is_array($pvalue) || $pvalue instanceof self) {
-                            // if the value is an array, assume IN() is desired
-                            $predicate = new Predicate\In($pkey, $pvalue);
-                        } elseif ($pvalue instanceof Predicate\PredicateInterface) {
-                            throw new Exception\InvalidArgumentException(
-                                'Using Predicate must not use string keys'
-                            );
-                        } else {
-                            // otherwise assume that array('foo' => 'bar') means "foo" = 'bar'
-                            $predicate = new Predicate\Operator($pkey, $pvalue, Predicate\Operator::OP_EQ);
-                        }
-                    } elseif ($pvalue instanceof Predicate\PredicateInterface) {
-                        // Predicate type is ok
-                        $predicate = $pvalue;
-                    } else {
-                        // must be an array of expressions (with int-indexed array)
-                        $predicate = (strpos($pvalue, Expression::PLACEHOLDER) !== false)
-                            ? new Predicate\Expression($pvalue) : new Predicate\Literal($pvalue);
-                    }
-                    $this->where->addPredicate($predicate, $combination);
-                }
-            }
+            $this->where->addPredicates($predicate, $combination);
         }
         return $this;
     }
@@ -400,27 +362,8 @@ class Select extends AbstractSql
     {
         if ($predicate instanceof Having) {
             $this->having = $predicate;
-        } elseif ($predicate instanceof \Closure) {
-            $predicate($this->having);
         } else {
-            if (is_string($predicate)) {
-                $predicate = new Predicate\Expression($predicate);
-                $this->having->addPredicate($predicate, $combination);
-            } elseif (is_array($predicate)) {
-                foreach ($predicate as $pkey => $pvalue) {
-                    if (is_string($pkey)) {
-                        if (strpos($pkey, '?') !== false) {
-                            $predicate = new Predicate\Expression($pkey, $pvalue);
-                        } else {
-                            $predicate = new Predicate\Operator($pkey, $pvalue, Predicate\Operator::OP_EQ);
-                        }
-
-                    } else {
-                        $predicate = new Predicate\Expression($pvalue);
-                    }
-                    $this->having->addPredicate($predicate, $combination);
-                }
-            }
+            $this->having->addPredicates($predicate, $combination);
         }
         return $this;
     }
@@ -435,7 +378,7 @@ class Select extends AbstractSql
             if (strpos($order, ',') !== false) {
                 $order = preg_split('#,\s+#', $order);
             } else {
-                $order = (array)$order;
+                $order = (array) $order;
             }
         } elseif (!is_array($order)) {
             $order = array($order);
@@ -456,6 +399,14 @@ class Select extends AbstractSql
      */
     public function limit($limit)
     {
+        if (!is_numeric($limit)) {
+            throw new Exception\InvalidArgumentException(sprintf(
+                '%s expects parameter to be numeric, "%s" given',
+                __METHOD__,
+                (is_object($limit) ? get_class($limit) : gettype($limit))
+            ));
+        }
+
         $this->limit = $limit;
         return $this;
     }
@@ -466,6 +417,14 @@ class Select extends AbstractSql
      */
     public function offset($offset)
     {
+        if (!is_numeric($offset)) {
+            throw new Exception\InvalidArgumentException(sprintf(
+                '%s expects parameter to be numeric, "%s" given',
+                __METHOD__,
+                (is_object($offset) ? get_class($offset) : gettype($offset))
+            ));
+        }
+
         $this->offset = $offset;
         return $this;
     }
@@ -511,7 +470,7 @@ class Select extends AbstractSql
                 $this->offset = null;
                 break;
             case self::ORDER:
-                $this->order = null;
+                $this->order = array();
                 break;
         }
         return $this;
@@ -606,7 +565,7 @@ class Select extends AbstractSql
     /**
      * Returns whether the table is read only or not.
      *
-     * @return boolean
+     * @return bool
      */
     public function isTableReadOnly()
     {
@@ -926,6 +885,7 @@ class Select extends AbstractSql
 
     /**
      * __clone
+     *
      * Resets the where object each time the Select is cloned.
      *
      * @return void
