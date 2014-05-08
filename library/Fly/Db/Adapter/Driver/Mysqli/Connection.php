@@ -154,7 +154,7 @@ class Connection implements ConnectionInterface
 
         $hostname = $findParameterValue(array('hostname', 'host'));
         $username = $findParameterValue(array('username', 'user'));
-        $password = $findParameterValue(array('password', 'passwd', 'pw'));
+        $password = $findParameterValue(array('password', 'passwd', 'pass', 'pw'));
         $database = $findParameterValue(array('database', 'dbname', 'db', 'schema'));
         $port = (isset($p['port'])) ? (int) $p['port'] : null;
         $socket = (isset($p['socket'])) ? $p['socket'] : null;

@@ -40,7 +40,7 @@ class Adapter implements AdapterInterface
         if (is_array($driver)) {
             $parameters = $driver;
             $driver = $this->createDriver($parameters);
-        } elseif (!$driver instanceof Driver\DriverInterface) {
+        } elseif (!($driver instanceof Driver\DriverInterface)) {
             throw new Exception\InvalidArgumentException(
                 'The supplied or instantiated driver object does not implement DriverInterface');
         }
@@ -163,7 +163,7 @@ class Adapter implements AdapterInterface
                 }
         }
 
-        if (!isset($driver) || !$driver instanceof Driver\DriverInterface) {
+        if (!isset($driver) || !($driver instanceof Driver\DriverInterface)) {
             throw new Exception\InvalidArgumentException('DriverInterface expected', null, null);
         }
 
