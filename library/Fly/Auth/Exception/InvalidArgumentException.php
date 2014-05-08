@@ -8,6 +8,6 @@
 namespace Fly\Auth\Exception;
 
 class InvalidArgumentException extends \InvalidArgumentException implements
-	ExceptionInterface
+    ExceptionInterface
 {
 }

@@ -108,7 +108,7 @@ class Pagination implements \Countable
     /**
      * Returns the number of pages.
      *
-     * @return integer
+     * @return int
      */
     public function count()
     {

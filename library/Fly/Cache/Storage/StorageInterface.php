@@ -10,19 +10,19 @@ namespace Fly\Cache\Storage;
 
 interface StorageInterface
 {
-	/**
-	 * Set options.
-	 *
-	 * @param array|\Traversable $options
-	 * @return $this
-	 */
-	public function setOptions($options);
+    /**
+     * Set options.
+     *
+     * @param array|\Traversable $options
+     * @return $this
+     */
+    public function setOptions($options);
 
-	/**
-	 * @param string $key
-	 * @return mixed
-	 */
-	public function get($key);
+    /**
+     * @param string $key
+     * @return mixed
+     */
+    public function get($key);
 
     /**
      * @param $key
@@ -32,36 +32,36 @@ interface StorageInterface
      */
     public function set($key, $value = null, $ttl = null);
 
-	/**
-	 * @param string $key
-	 * @return bool
-	 */
-	public function has($key);
+    /**
+     * @param string $key
+     * @return bool
+     */
+    public function has($key);
 
-	/**
-	 * @param string $key
-	 * @return bool
-	 */
-	public function remove($key);
+    /**
+     * @param string $key
+     * @return bool
+     */
+    public function remove($key);
 
-	/**
-	 * @param string $key
-	 * @return bool
-	 */
-	public function touch($key);
+    /**
+     * @param string $key
+     * @return bool
+     */
+    public function touch($key);
 
-	/**
-	 * @param string $key
-	 * @param int $value
-	 * @return int|bool The new value on success, false on failure
-	 */
-	public function increment($key, $value);
+    /**
+     * @param string $key
+     * @param int $value
+     * @return int|bool The new value on success, false on failure
+     */
+    public function increment($key, $value);
 
-	/**
-	 * @param string $key
-	 * @param int $value
-	 * @return int|bool The new value on success, false on failure
-	 */
-	public function decrement($key, $value);
+    /**
+     * @param string $key
+     * @param int $value
+     * @return int|bool The new value on success, false on failure
+     */
+    public function decrement($key, $value);
 
 }

@@ -13,186 +13,186 @@ use Fly\Mvc\Router\Route\RouteInterface;
 
 class RouteList implements Iterator, Countable
 {
-	/**
-	 * Internal list of all routes.
-	 *
-	 * @var array
-	 */
-	protected $routes = array();
+    /**
+     * Internal list of all routes.
+     *
+     * @var array
+     */
+    protected $routes = array();
 
-	/**
-	 * Serial assigned to routes to preserve LIFO.
-	 *
-	 * @var integer
-	 */
-	protected $serial = 0;
+    /**
+     * Serial assigned to routes to preserve LIFO.
+     *
+     * @var int
+     */
+    protected $serial = 0;
 
-	/**
-	 * Internal counter to avoid usage of count().
-	 *
-	 * @var integer
-	 */
-	protected $count = 0;
+    /**
+     * Internal counter to avoid usage of count().
+     *
+     * @var int
+     */
+    protected $count = 0;
 
-	/**
-	 * Whether the list was already sorted.
-	 *
-	 * @var bool
-	 */
-	protected $sorted = false;
+    /**
+     * Whether the list was already sorted.
+     *
+     * @var bool
+     */
+    protected $sorted = false;
 
-	/**
-	 * Insert a new route.
-	 *
-	 * @param  string $name
-	 * @param  RouteInterface $route
-	 * @return void
-	 */
-	public function insert($name, RouteInterface $route)
-	{
-		$this->sorted = false;
-		$this->count++;
+    /**
+     * Insert a new route.
+     *
+     * @param  string $name
+     * @param  RouteInterface $route
+     * @return void
+     */
+    public function insert($name, RouteInterface $route)
+    {
+        $this->sorted = false;
+        $this->count++;
 
-		$this->routes[$name] = array('route' => $route, 'serial' => $this->serial++,);
-	}
+        $this->routes[$name] = array('route' => $route, 'serial' => $this->serial++,);
+    }
 
-	/**
-	 * Remove a route.
-	 *
-	 * @param  string $name
-	 * @return void
-	 */
-	public function remove($name)
-	{
-		if (!isset($this->routes[$name])) {
-			return;
-		}
+    /**
+     * Remove a route.
+     *
+     * @param  string $name
+     * @return void
+     */
+    public function remove($name)
+    {
+        if (!isset($this->routes[$name])) {
+            return;
+        }
 
-		$this->count--;
+        $this->count--;
 
-		unset($this->routes[$name]);
-	}
+        unset($this->routes[$name]);
+    }
 
-	/**
-	 * Remove all routes.
-	 *
-	 * @return void
-	 */
-	public function clear()
-	{
-		$this->routes = array();
-		$this->serial = 0;
-		$this->count = 0;
-		$this->sorted = false;
-	}
+    /**
+     * Remove all routes.
+     *
+     * @return void
+     */
+    public function clear()
+    {
+        $this->routes = array();
+        $this->serial = 0;
+        $this->count = 0;
+        $this->sorted = false;
+    }
 
-	/**
-	 * Get a route.
-	 *
-	 * @param  string $name
-	 * @return RouteInterface
-	 */
-	public function get($name)
-	{
-		if (!isset($this->routes[$name])) {
-			return null;
-		}
+    /**
+     * Get a route.
+     *
+     * @param  string $name
+     * @return RouteInterface
+     */
+    public function get($name)
+    {
+        if (!isset($this->routes[$name])) {
+            return null;
+        }
 
-		return $this->routes[$name]['route'];
-	}
+        return $this->routes[$name]['route'];
+    }
 
-	/**
-	 * Sort all routes.
-	 *
-	 * @return void
-	 */
-	protected function sort()
-	{
-		uasort($this->routes, array($this, 'compare'));
-		$this->sorted = true;
-	}
+    /**
+     * Sort all routes.
+     *
+     * @return void
+     */
+    protected function sort()
+    {
+        uasort($this->routes, array($this, 'compare'));
+        $this->sorted = true;
+    }
 
-	/**
-	 * Compare the priority of two routes.
-	 *
-	 * @param  array $route1,
-	 * @param  array $route2
-	 * @return integer
-	 */
-	protected function compare(array $route1, array $route2)
-	{
-		return ($route1['serial'] > $route2['serial'] ? -1 : 1);
-	}
+    /**
+     * Compare the priority of two routes.
+     *
+     * @param  array $route1 ,
+     * @param  array $route2
+     * @return int
+     */
+    protected function compare(array $route1, array $route2)
+    {
+        return ($route1['serial'] > $route2['serial'] ? -1 : 1);
+    }
 
-	/**
-	 * rewind(): defined by Iterator interface.
-	 *
-	 * @see    Iterator::rewind()
-	 * @return void
-	 */
-	public function rewind()
-	{
-		if (!$this->sorted) {
-			$this->sort();
-		}
+    /**
+     * rewind(): defined by Iterator interface.
+     *
+     * @see    Iterator::rewind()
+     * @return void
+     */
+    public function rewind()
+    {
+        if (!$this->sorted) {
+            $this->sort();
+        }
 
-		reset($this->routes);
-	}
+        reset($this->routes);
+    }
 
-	/**
-	 * current(): defined by Iterator interface.
-	 *
-	 * @see    Iterator::current()
-	 * @return RouteInterface
-	 */
-	public function current()
-	{
-		$node = current($this->routes);
-		return ($node !== false ? $node['route'] : false);
-	}
+    /**
+     * current(): defined by Iterator interface.
+     *
+     * @see    Iterator::current()
+     * @return RouteInterface
+     */
+    public function current()
+    {
+        $node = current($this->routes);
+        return ($node !== false ? $node['route'] : false);
+    }
 
-	/**
-	 * key(): defined by Iterator interface.
-	 *
-	 * @see    Iterator::key()
-	 * @return string
-	 */
-	public function key()
-	{
-		return key($this->routes);
-	}
+    /**
+     * key(): defined by Iterator interface.
+     *
+     * @see    Iterator::key()
+     * @return string
+     */
+    public function key()
+    {
+        return key($this->routes);
+    }
 
-	/**
-	 * next(): defined by Iterator interface.
-	 *
-	 * @see    Iterator::next()
-	 * @return RouteInterface
-	 */
-	public function next()
-	{
-		$node = next($this->routes);
-		return ($node !== false ? $node['route'] : false);
-	}
+    /**
+     * next(): defined by Iterator interface.
+     *
+     * @see    Iterator::next()
+     * @return RouteInterface
+     */
+    public function next()
+    {
+        $node = next($this->routes);
+        return ($node !== false ? $node['route'] : false);
+    }
 
-	/**
-	 * valid(): defined by Iterator interface.
-	 *
-	 * @see    Iterator::valid()
-	 * @return bool
-	 */
-	public function valid()
-	{
-		return ($this->current() !== false);
-	}
+    /**
+     * valid(): defined by Iterator interface.
+     *
+     * @see    Iterator::valid()
+     * @return bool
+     */
+    public function valid()
+    {
+        return ($this->current() !== false);
+    }
 
-	/**
-	 * count(): defined by Countable interface.
-	 *
-	 * @see    Countable::count()
-	 * @return integer
-	 */
-	public function count()
-	{
-		return $this->count;
-	}
+    /**
+     * count(): defined by Countable interface.
+     *
+     * @see    Countable::count()
+     * @return int
+     */
+    public function count()
+    {
+        return $this->count;
+    }
 }

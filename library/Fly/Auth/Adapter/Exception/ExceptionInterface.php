@@ -10,4 +10,5 @@ namespace Fly\Auth\Adapter\Exception;
 use Fly\Auth\Exception\ExceptionInterface as Exception;
 
 interface ExceptionInterface extends Exception
-{}
+{
+}

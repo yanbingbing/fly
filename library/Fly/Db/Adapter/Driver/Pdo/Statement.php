@@ -183,7 +183,7 @@ class Statement implements StatementInterface
             $this->prepare();
         }
 
-        if (!$this->parameters instanceof Parameters) {
+        if (!($this->parameters instanceof Parameters)) {
             if ($parameters instanceof Parameters) {
                 $this->parameters = $parameters;
                 $parameters = null;

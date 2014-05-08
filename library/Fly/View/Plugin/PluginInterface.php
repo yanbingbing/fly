@@ -11,18 +11,18 @@ use Fly\View\Renderer\Php as Renderer;
 
 interface PluginInterface
 {
-	/**
-	 * Set the Renderer object
-	 *
-	 * @param Renderer $renderer
-	 * @return $this
-	 */
-	public function setRenderer(Renderer $renderer);
+    /**
+     * Set the Renderer object
+     *
+     * @param Renderer $renderer
+     * @return $this
+     */
+    public function setRenderer(Renderer $renderer);
 
-	/**
-	 * Get the Renderer object
-	 *
-	 * @return Renderer
-	 */
-	public function getRenderer();
+    /**
+     * Get the Renderer object
+     *
+     * @return Renderer
+     */
+    public function getRenderer();
 }

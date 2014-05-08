@@ -58,7 +58,7 @@ class Statement implements StatementInterface
      */
     public function __construct($bufferResults = false)
     {
-        $this->bufferResults = (bool) $bufferResults;
+        $this->bufferResults = (bool)$bufferResults;
     }
 
     /**
@@ -176,10 +176,10 @@ class Statement implements StatementInterface
             throw new Exception\RuntimeException('This statement has already been prepared');
         }
 
-        $sql = ($sql) ?: $this->sql;
+        $sql = ($sql) ? : $this->sql;
 
         $this->resource = $this->mysqli->prepare($sql);
-        if (!$this->resource instanceof \mysqli_stmt) {
+        if (!($this->resource instanceof \mysqli_stmt)) {
             throw new Exception\InvalidQueryException(
                 'Statement couldn\'t be produced with sql: ' . $sql,
                 null,
@@ -204,7 +204,7 @@ class Statement implements StatementInterface
             $this->prepare();
         }
 
-        if (!$this->parameters instanceof Parameters) {
+        if (!($this->parameters instanceof Parameters)) {
             if ($parameters instanceof Parameters) {
                 $this->parameters = $parameters;
                 $parameters = null;
@@ -269,7 +269,7 @@ class Statement implements StatementInterface
             } else {
                 $type .= 's';
             }
-            $args[] = &$value;
+            $args[] = & $value;
         }
 
         if ($args) {

@@ -9,8 +9,8 @@ namespace Fly\Validator;
 
 class NotNull extends AbstractValidator
 {
-	public function isValid($value)
-	{
-		return null !== $value;
-	}
+    public function isValid($value)
+    {
+        return null !== $value;
+    }
 }

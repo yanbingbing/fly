@@ -9,8 +9,8 @@ namespace Fly\Validator;
 
 class Email extends AbstractValidator
 {
-	public function isValid($value)
-	{
-		return (bool) filter_var($value, FILTER_VALIDATE_EMAIL);
-	}
+    public function isValid($value)
+    {
+        return (bool)filter_var($value, FILTER_VALIDATE_EMAIL);
+    }
 }

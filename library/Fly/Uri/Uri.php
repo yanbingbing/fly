@@ -147,7 +147,7 @@ class Uri
             return true;
         }
 
-        if (! ($this->query || $this->fragment)) {
+        if (!($this->query || $this->fragment)) {
             // No host, path, query or fragment - this is not a valid URI
             return false;
         }
@@ -174,7 +174,7 @@ class Uri
             return true;
         }
 
-        if (! ($this->query || $this->fragment)) {
+        if (!($this->query || $this->fragment)) {
             // No host, path, query or fragment - this is not a valid URI
             return false;
         }
@@ -243,7 +243,7 @@ class Uri
                 $portLength = strlen($matches[0]);
                 $port = substr($matches[0], 1);
 
-                $this->setPort((int) $port);
+                $this->setPort((int)$port);
                 $authority = substr($authority, 0, -$portLength);
             }
 
@@ -402,7 +402,7 @@ class Uri
 
         if (is_string($baseUri)) {
             $baseUri = new static($baseUri);
-        } elseif (!$baseUri instanceof Uri) {
+        } elseif (!($baseUri instanceof Uri)) {
             throw new Exception\InvalidArgumentException(
                 'Provided base URI must be a string or a Uri object'
             );
@@ -781,7 +781,7 @@ class Uri
             return false;
         }
 
-        return (bool) preg_match('/^[A-Za-z][A-Za-z0-9\-\.+]*$/', $scheme);
+        return (bool)preg_match('/^[A-Za-z][A-Za-z0-9\-\.+]*$/', $scheme);
     }
 
     /**
@@ -793,7 +793,7 @@ class Uri
     public static function validateUserInfo($userInfo)
     {
         $regex = '/^(?:[' . self::CHAR_UNRESERVED . self::CHAR_SUB_DELIMS . ':]+|%[A-Fa-f0-9]{2})*$/';
-        return (bool) preg_match($regex, $userInfo);
+        return (bool)preg_match($regex, $userInfo);
     }
 
     /**
@@ -822,7 +822,7 @@ class Uri
         }
 
         if ($port) {
-            $port = (int) $port;
+            $port = (int)$port;
             if ($port < 1 || $port > 0xffff) {
                 return false;
             }
@@ -842,7 +842,7 @@ class Uri
         $pchar = '(?:[' . self::CHAR_UNRESERVED . ':@&=\+\$,]+|%[A-Fa-f0-9]{2})*';
         $segment = $pchar . "(?:;{$pchar})*";
         $regex = "/^{$segment}(?:\/{$segment})*$/";
-        return (bool) preg_match($regex, $path);
+        return (bool)preg_match($regex, $path);
     }
 
     /**
@@ -860,7 +860,7 @@ class Uri
     public static function validateQueryFragment($input)
     {
         $regex = '/^(?:[' . self::CHAR_UNRESERVED . self::CHAR_SUB_DELIMS . ':@\/\?]+|%[A-Fa-f0-9]{2})*$/';
-        return (bool) preg_match($regex, $input);
+        return (bool)preg_match($regex, $input);
     }
 
     /**
@@ -958,7 +958,7 @@ class Uri
      */
     public static function parseScheme($uriString)
     {
-        if (! is_string($uriString)) {
+        if (!is_string($uriString)) {
             throw new Exception\InvalidArgumentException(sprintf(
                 'Expecting a string, got %s',
                 (is_object($uriString) ? get_class($uriString) : gettype($uriString))

@@ -46,7 +46,7 @@ abstract class AbstractTable implements TableInterface
     protected $rowPrototype;
 
     /**
-     * @var integer
+     * @var int
      */
     protected $lastInsertValue = null;
 
@@ -70,15 +70,15 @@ abstract class AbstractTable implements TableInterface
             return;
         }
 
-        if (!$this->adapter instanceof AdapterInterface) {
+        if (!($this->adapter instanceof AdapterInterface)) {
             throw new Exception\RuntimeException('This table does not have an Adapter set.');
         }
 
-        if (!$this->table instanceof TableIdentifier) {
+        if (!($this->table instanceof TableIdentifier)) {
             throw new Exception\RuntimeException('This table does not have a valid table set.');
         }
 
-        if (!$this->sql instanceof Sql) {
+        if (!($this->sql instanceof Sql)) {
             $this->sql = new Sql($this->adapter, $this->table);
         }
 
@@ -86,7 +86,7 @@ abstract class AbstractTable implements TableInterface
             throw new Exception\RuntimeException(
                 'The table inside the provided Sql object must match the table of this Table');
         }
-        if (!$this->rowPrototype instanceof AbstractRow) {
+        if (!($this->rowPrototype instanceof AbstractRow)) {
             $this->rowPrototype = new Row;
         }
         $this->rowPrototype->setupWithTable($this);
@@ -438,7 +438,7 @@ abstract class AbstractTable implements TableInterface
     /**
      * Get last insert value
      *
-     * @return integer
+     * @return int
      */
     public function getLastInsertValue()
     {

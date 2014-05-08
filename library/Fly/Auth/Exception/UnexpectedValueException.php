@@ -8,6 +8,6 @@
 namespace Fly\Auth\Exception;
 
 class UnexpectedValueException extends \UnexpectedValueException implements
-	ExceptionInterface
+    ExceptionInterface
 {
 }

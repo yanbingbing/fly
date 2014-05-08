@@ -97,14 +97,14 @@ class Parameters implements \Iterator, \ArrayAccess, \Countable
                 $position = $name;
                 $name = $this->positions[$name];
             } else {
-                $name = (string) $name;
+                $name = (string)$name;
             }
         } elseif (is_string($name)) {
             // is a string:
             $currentNames = array_keys($this->data);
             $position = array_search($name, $currentNames, true);
         } elseif ($name === null) {
-            $name = (string) count($this->data);
+            $name = (string)count($this->data);
         } else {
             throw new Exception\InvalidArgumentException('Keys must be string, integer or null');
         }
@@ -307,7 +307,7 @@ class Parameters implements \Iterator, \ArrayAccess, \Countable
      */
     public function merge($parameters)
     {
-        if (!is_array($parameters) && !$parameters instanceof self) {
+        if (!is_array($parameters) && !($parameters instanceof self)) {
             throw new Exception\InvalidArgumentException(
                 '$parameters must be an array or an instance of Parameters');
         }

@@ -94,7 +94,7 @@ abstract class AbstractRow implements ArrayAccess, IteratorAggregate, Countable,
             $this->primaryKey = (array)$this->primaryKey;
         }
 
-        if (!$this->sql instanceof Sql) {
+        if (!($this->sql instanceof Sql)) {
             throw new Exception\RuntimeException('This row object does not have a Sql object set.');
         }
 

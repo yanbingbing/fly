@@ -72,8 +72,8 @@ class Result implements ResultInterface
      */
     public function initialize($resource, $generatedValue, $isBuffered = null)
     {
-        if (!$resource instanceof \mysqli && !$resource instanceof \mysqli_result
-            && !$resource instanceof \mysqli_stmt
+        if (!($resource instanceof \mysqli) && !($resource instanceof \mysqli_result)
+            && !($resource instanceof \mysqli_stmt)
         ) {
             throw new Exception\InvalidArgumentException('Invalid resource provided.');
         }
@@ -82,8 +82,8 @@ class Result implements ResultInterface
             $this->isBuffered = $isBuffered;
         } else {
             if ($resource instanceof \mysqli || $resource instanceof \mysqli_result
-                || $resource instanceof \mysqli_stmt && $resource->num_rows != 0)
-            {
+                || $resource instanceof \mysqli_stmt && $resource->num_rows != 0
+            ) {
                 $this->isBuffered = true;
             }
         }
@@ -197,7 +197,7 @@ class Result implements ResultInterface
             $this->statementBindValues['values'] = array_fill(0, count($this->statementBindValues['keys']), null);
             $refs = array();
             foreach ($this->statementBindValues['values'] as $i => &$f) {
-                $refs[$i] = &$f;
+                $refs[$i] = & $f;
             }
             call_user_func_array(array($this->resource, 'bind_result'), $this->statementBindValues['values']);
         }

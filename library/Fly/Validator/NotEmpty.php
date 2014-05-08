@@ -9,8 +9,8 @@ namespace Fly\Validator;
 
 class NotEmpty extends AbstractValidator
 {
-	public function isValid($value)
-	{
-		return empty($value) === false;
-	}
+    public function isValid($value)
+    {
+        return empty($value) === false;
+    }
 }

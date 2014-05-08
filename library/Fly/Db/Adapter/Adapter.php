@@ -48,7 +48,7 @@ class Adapter implements AdapterInterface
         $driver->checkEnvironment();
         $this->driver = $driver;
 
-        $this->platform = $platform ?: $parameters;
+        $this->platform = $platform ? : $parameters;
     }
 
     /**

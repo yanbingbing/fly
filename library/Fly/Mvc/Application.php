@@ -115,7 +115,7 @@ class Application
     {
         if (!$this->input) {
             $input = $this->mountManager->get('Input');
-            if (!$input instanceof HttpInput) {
+            if (!($input instanceof HttpInput)) {
                 $input = new HttpInput;
                 $this->mountManager->mount('Input', $input);
             }
@@ -160,7 +160,7 @@ class Application
     {
         if (!$this->controllerLoader) {
             $loader = $this->mountManager->get('ControllerLoader');
-            if (!$loader instanceof ControllerLoader) {
+            if (!($loader instanceof ControllerLoader)) {
                 $loader = new ControllerLoader;
                 $this->mountManager->mount('ControllerLoader', $loader);
             }
@@ -196,7 +196,7 @@ class Application
     {
         if (!$this->router) {
             $router = $this->mountManager->get('Router');
-            if (!$router instanceof Router) {
+            if (!($router instanceof Router)) {
                 $router = new Router;
                 $this->mountManager->mount('Router', $router);
             }

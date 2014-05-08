@@ -8,6 +8,6 @@
 namespace Fly\Auth\Exception;
 
 class RuntimeException extends \RuntimeException implements
-	ExceptionInterface
+    ExceptionInterface
 {
 }

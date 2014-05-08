@@ -9,18 +9,18 @@ namespace Fly\Db\Adapter;
 
 interface AdapterInterface
 {
-	/**
-	 * @return Driver\DriverInterface
-	 */
-	public function getDriver();
+    /**
+     * @return Driver\DriverInterface
+     */
+    public function getDriver();
 
-	/**
-	 * @return Platform\PlatformInterface
-	 */
-	public function getPlatform();
+    /**
+     * @return Platform\PlatformInterface
+     */
+    public function getPlatform();
 
-	/**
-	 * @return Metadata\MetadataInterface
-	 */
-	public function getMetadata();
+    /**
+     * @return Metadata\MetadataInterface
+     */
+    public function getMetadata();
 }

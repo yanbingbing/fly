@@ -8,6 +8,6 @@
 namespace Fly\View\Exception;
 
 class DomainException extends \DomainException
-	implements ExceptionInterface
+    implements ExceptionInterface
 {
 }

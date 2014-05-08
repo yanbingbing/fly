@@ -126,7 +126,7 @@ abstract class AbstractController
     {
         if ($this->viewManager == null) {
             $this->viewManager = $this->application->getMountManager()->get('ViewManager');
-            if (!$this->viewManager instanceof ViewManager) {
+            if (!($this->viewManager instanceof ViewManager)) {
                 throw new Exception\RuntimeException("Must suply an instance of viewManger");
             }
         }
@@ -207,7 +207,7 @@ abstract class AbstractController
     protected function redirect($url = null, array $params = null)
     {
         if (is_null($url) || is_array($url) || is_array($params)) {
-            $url = $this->url($url, $params ?: array());
+            $url = $this->url($url, $params ? : array());
         }
         $sender = $this->getSender();
         $sender->getHeaders()->addHeaderLine('Location', $url);
@@ -224,14 +224,13 @@ abstract class AbstractController
 
         $action = $input->get('action');
 
-        if (empty($action) || !method_exists($this, ($method = static::transformActionToMethod($action))))
-        {
+        if (empty($action) || !method_exists($this, ($method = static::transformActionToMethod($action)))) {
             $action = 'notFound';
             $input->set('action', $action);
             $method = static::transformActionToMethod($action);
         }
 
-        if (false === $this->beforeDispatch($method)) {// 直接返回
+        if (false === $this->beforeDispatch($method)) { // 直接返回
             return;
         }
 

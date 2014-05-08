@@ -72,15 +72,15 @@ class Mysql extends AbstractSource
             $columnName = $row[$field];
             $columns[$columnName] = array(
                 'COLUMN_NAME' => $columnName,
-                'COLUMN_POS'  => $i,
-                'DATA_TYPE'   => $row[$type],
-                'DEFAULT'     => $row[$default],
-                'NULLABLE'    => (bool)($row[$null] == 'YES'),
-                'LENGTH'      => $length,
-                'UNSIGNED'    => $unsigned,
-                'PRIMARY'     => $primary,
+                'COLUMN_POS' => $i,
+                'DATA_TYPE' => $row[$type],
+                'DEFAULT' => $row[$default],
+                'NULLABLE' => (bool)($row[$null] == 'YES'),
+                'LENGTH' => $length,
+                'UNSIGNED' => $unsigned,
+                'PRIMARY' => $primary,
                 'PRIMARY_POS' => $primaryPos,
-                'IDENTITY'    => $identity
+                'IDENTITY' => $identity
             );
             ++$i;
         }

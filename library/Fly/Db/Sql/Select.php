@@ -161,7 +161,7 @@ class Select extends AbstractSql
             throw new Exception\InvalidArgumentException('Since this object was created with a table, use join instead.');
         }
 
-        if (!is_string($table) && !is_array($table) && !$table instanceof TableIdentifier) {
+        if (!is_string($table) && !is_array($table) && !($table instanceof TableIdentifier)) {
             throw new Exception\InvalidArgumentException('$table must be a string, array, or an instance of TableIdentifier');
         }
 
@@ -378,7 +378,7 @@ class Select extends AbstractSql
             if (strpos($order, ',') !== false) {
                 $order = preg_split('#,\s+#', $order);
             } else {
-                $order = (array) $order;
+                $order = (array)$order;
             }
         } elseif (!is_array($order)) {
             $order = array($order);

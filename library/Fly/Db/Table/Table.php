@@ -52,11 +52,12 @@ class Table extends AbstractTable
 
     protected function setupRowPrototype($rowPrototype)
     {
-        $this->rowPrototype = $rowPrototype ?: self::getRowPrototype($this->getTable()->getTable());
+        $this->rowPrototype = $rowPrototype ? : self::getRowPrototype($this->getTable()->getTable());
     }
 
     /** @var callable|array|RowLoader */
     protected static $rowLoader;
+
     public static function setRowLoader($loader)
     {
         self::$rowLoader = $loader;

@@ -9,10 +9,10 @@ namespace Fly\Auth\Adapter;
 
 interface AdapterInterface
 {
-	/**
-	 * Performs an authentication attempt
-	 *
-	 * @return \Fly\Auth\Result
-	 */
-	public function authenticate();
+    /**
+     * Performs an authentication attempt
+     *
+     * @return \Fly\Auth\Result
+     */
+    public function authenticate();
 }

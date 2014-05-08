@@ -34,13 +34,13 @@ class Pdo implements DriverInterface
      */
     public function __construct($connection, Statement $statementPrototype = null, Result $resultPrototype = null)
     {
-        if (!$connection instanceof Connection) {
+        if (!($connection instanceof Connection)) {
             $connection = new Connection($connection);
         }
 
         $this->registerConnection($connection);
-        $this->registerStatementPrototype(($statementPrototype) ?: new Statement());
-        $this->registerResultPrototype(($resultPrototype) ?: new Result());
+        $this->registerStatementPrototype(($statementPrototype) ? : new Statement());
+        $this->registerResultPrototype(($resultPrototype) ? : new Result());
     }
 
     /**

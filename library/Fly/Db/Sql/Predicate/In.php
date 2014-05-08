@@ -24,7 +24,7 @@ class In implements PredicateInterface
     public function __construct($identifier, $valueSet)
     {
         $this->identifier = $identifier;
-        if (!is_array($valueSet) && !$valueSet instanceof Select) {
+        if (!is_array($valueSet) && !($valueSet instanceof Select)) {
             throw new Exception\InvalidArgumentException(
                 '$valueSet must be either an array or a Select object, ' . gettype($valueSet) . ' given'
             );
