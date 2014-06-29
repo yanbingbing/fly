@@ -277,7 +277,7 @@ class DbTable implements AdapterInterface
 
         $credentialExpression = new Expr(
             '(CASE WHEN ?' . ' = ' . $this->credentialTreatment . ' THEN 1 ELSE 0 END) AS ?',
-            array($this->credentialColumn, $this->credential, 'top_auth_credential_match'),
+            array($this->credentialColumn, $this->credential, 'fly_auth_credential_match'),
             array(Expr::TYPE_IDENTIFIER, Expr::TYPE_VALUE, Expr::TYPE_IDENTIFIER)
         );
 
@@ -314,8 +314,8 @@ class DbTable implements AdapterInterface
 
         // Loop, check and break on success.
         foreach ($resultIdentities as $resultIdentity) {
-            if ($resultIdentity['top_auth_credential_match'] == '1') {
-                unset($resultIdentity['top_auth_credential_match']);
+            if ($resultIdentity['fly_auth_credential_match'] == '1') {
+                unset($resultIdentity['fly_auth_credential_match']);
                 $this->resultRow = $resultIdentity;
                 $code = AuthResult::SUCCESS;
             } else {

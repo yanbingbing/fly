@@ -238,12 +238,12 @@ class Adapter implements AdapterInterface
     }
 
     /**
-     * @var callable|AdapterInterface|Driver\DriverInterface|array
+     * @var callable|Adapter|Driver\DriverInterface|array
      */
     protected static $defaultAdapter;
 
     /**
-     * @param $adapter callable|AdapterInterface|Driver\DriverInterface|array
+     * @param $adapter callable|Adapter|Driver\DriverInterface|array
      */
     public static function setDefaultAdapter($adapter)
     {
@@ -251,11 +251,11 @@ class Adapter implements AdapterInterface
     }
 
     /**
-     * @return null|AdapterInterface
+     * @return null|Adapter
      */
     public static function getDefaultAdapter()
     {
-        if (is_null(self::$defaultAdapter) || (self::$defaultAdapter instanceof AdapterInterface)) {
+        if (is_null(self::$defaultAdapter) || (self::$defaultAdapter instanceof Adapter)) {
             return self::$defaultAdapter;
         }
         if (is_callable(self::$defaultAdapter)) {
@@ -267,7 +267,7 @@ class Adapter implements AdapterInterface
                     'An exception was raised while creating adapter', $e->getCode(), $e
                 );
             }
-            if (!($instance instanceof AdapterInterface)) {
+            if (!($instance instanceof Adapter)) {
                 throw new Exception\InvalidArgumentException('Invalid adapter return from callable');
             }
             self::$defaultAdapter = $instance;
