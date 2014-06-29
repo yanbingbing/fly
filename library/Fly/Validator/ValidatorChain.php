@@ -250,16 +250,4 @@ class ValidatorChain implements \Countable, ValidatorInterface
     {
         return array('validators', 'messages');
     }
-
-    /**
-     * Perform a deep clone
-     *
-     * @return ValidatorChain A cloned ValidatorChain
-     */
-    public function __clone()
-    {
-        if (is_object($this->loader)) {
-            $this->loader = clone $this->loader;
-        }
-    }
 }
