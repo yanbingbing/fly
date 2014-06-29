@@ -620,6 +620,20 @@ abstract class AbstractRow implements ArrayAccess, IteratorAggregate, Countable,
     }
 
     /**
+     * Perform a deep clone
+     *
+     * @return self
+     */
+    public function __clone()
+    {
+        if (!empty($this->validatorChains)) {
+            foreach ($this->validatorChains as $column => $validatorChain) {
+                $this->validatorChains[$column] = clone $validatorChain;
+            }
+        }
+    }
+
+    /**
      * Required by interface IteratorAggregate, use for foreach
      *
      * @return ArrayIterator
