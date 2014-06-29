@@ -41,16 +41,26 @@ class Loader
     }
 
     /**
-     * Register a namespace/directory pair
+     * Register namespace/directory pair
      *
      * @param  string $namespace
-     * @param  string $directory
+     * @param  string|array $directories
      * @return $this
      */
-    public function registerNamespace($namespace, $directory)
+    public function registerNamespace($namespace, $directories)
     {
         $namespace = rtrim($namespace, self::NS_SEPARATOR) . self::NS_SEPARATOR;
-        $this->namespaces[$namespace] = $this->normalizeDirectory($directory);
+        if (!array_key_exists($namespace, $this->namespaces)) {
+            $this->namespaces[$namespace] = array();
+        }
+        if (is_array($directories) || $directories instanceof \Traversable) {
+            foreach ($directories as $directory) {
+                $this->namespaces[$namespace][] = self::normalizeDirectory($directory);
+            }
+        } else {
+            $this->namespaces[$namespace][] = self::normalizeDirectory($directories);
+        }
+        krsort($this->namespaces);
         return $this;
     }
 
@@ -64,17 +74,18 @@ class Loader
     public function loadClass($class)
     {
         // Namespace and/or prefix autoloading
-        foreach ($this->namespaces as $leader => $path) {
+        foreach ($this->namespaces as $leader => $pathes) {
             if (0 === strpos($class, $leader)) {
-                // Trim off leader (namespace or prefix)
-                $trimmedClass = substr($class, strlen($leader));
+                foreach ($pathes as $path) {
+                    // Trim off leader (namespace or prefix)
+                    $trimmedClass = substr($class, strlen($leader));
 
-                // create filename
-                $filename = $this->transformClassNameToFilename($trimmedClass, $path);
-                if (file_exists($filename)) {
-                    return include $filename;
+                    // create filename
+                    $filename = self::transformClassNameToFilename($trimmedClass, $path);
+                    if (file_exists($filename)) {
+                        return include $filename;
+                    }
                 }
-                return false;
             }
         }
         return false;
@@ -88,7 +99,7 @@ class Loader
         return false;
     }
 
-    protected function normalizeDirectory($directory)
+    protected static function normalizeDirectory($directory)
     {
         $directory = str_replace('\\', '/', $directory);
         if ($directory[strlen($directory) - 1] != '/') {
@@ -97,7 +108,7 @@ class Loader
         return $directory;
     }
 
-    protected function transformClassNameToFilename($class, $directory)
+    protected static function transformClassNameToFilename($class, $directory)
     {
         // $class may contain a namespace portion, in which case we need
         // to preserve any underscores in that portion.
