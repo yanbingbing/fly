@@ -31,6 +31,11 @@ class PluginLoader
      */
     protected $renderer;
 
+    /**
+     * @var array
+     */
+    protected $configs = array();
+
     public function __construct()
     {
         $this->registerPath(__DIR__, __NAMESPACE__);
@@ -90,6 +95,27 @@ class PluginLoader
     }
 
     /**
+     * @param array|\Traversable $configs
+     * @throws Exception\InvalidArgumentException
+     * @return $this
+     */
+    public function setConfigs($configs)
+    {
+        if (!is_array($configs) && !($configs instanceof \Traversable)) {
+            throw new Exception\InvalidArgumentException(sprintf(
+                'Parameter provided to %s must be an array or Traversable',
+                __METHOD__
+            ));
+        }
+
+        foreach ($configs as $key => $cfg) {
+            $this->configs[self::normalizeName($key)] = $cfg;
+        }
+
+        return $this;
+    }
+
+    /**
      * Set renderer
      *
      * @param  Renderer $renderer
@@ -119,7 +145,7 @@ class PluginLoader
      * @param mixed $options
      * @return null|PluginInterface
      */
-    public function get($name, $options = array())
+    public function get($name, $options = null)
     {
         $name = static::normalizeName($name);
 
@@ -134,6 +160,10 @@ class PluginLoader
         if (!is_subclass_of($class, __NAMESPACE__ . '\\PluginInterface')) {
             throw new Exception\BadPluginException(sprintf(
                 'Class "%s" is not Implements the PluginInterface', $class));
+        }
+
+        if ($options == null && isset($this->configs[$name])) {
+            $options = $this->configs[$name];
         }
 
         /** @var $plugin PluginInterface */

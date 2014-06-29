@@ -36,10 +36,9 @@ class Placeholder
     public function __construct()
     {
         foreach (array(
-                     'headscript' => __NAMESPACE__ . '\Container\HeadScript',
-                     'headlink' => __NAMESPACE__ . '\Container\HeadLink',
-                     'assets' => __NAMESPACE__ . '\Container\Assets'
-                 ) as $name => $class) {
+            'script' => __NAMESPACE__ . '\Container\Script',
+            'style' => __NAMESPACE__ . '\Container\Style'
+        ) as $name => $class) {
             $this->registerContainerClass($name, $class);
         }
     }
@@ -101,13 +100,17 @@ class Placeholder
         $name = self::normalizeName($name);
 
         if (!isset($this->placeholderContainers[$name])) {
-            $class = isset($this->containerClass[$name])
-                ? $this->containerClass[$name] : __NAMESPACE__ . '\\Container\\Simple';
+            list($namespace) = explode(':', $name, 2);
+            $class = isset($this->containerClass[$namespace])
+                ? $this->containerClass[$namespace] : __NAMESPACE__ . '\\Container\\Container';
             if (!class_exists($class, true)) {
                 throw new Exception\RuntimeException("Not found the Container of class '$class'");
             }
             $this->placeholderContainers[$name] = new $class;
-            if (isset($this->configs[$name])) {
+            if (isset($this->configs[$namespace])) {
+                $this->placeholderContainers[$namespace]->setOptions($this->configs[$namespace]);
+            }
+            if ($name !== $namespace && isset($this->configs[$name])) {
                 $this->placeholderContainers[$name]->setOptions($this->configs[$name]);
             }
         }

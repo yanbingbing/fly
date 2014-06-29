@@ -10,16 +10,8 @@ namespace Fly\View\Placeholder\Container;
 use Fly\View\Exception;
 use stdClass;
 
-class HeadScript extends AbstractContainer
+class Script extends AbstractContainer
 {
-    /**#@+
-     * Script type constants
-     * @const string
-     */
-    const FILE = 'FILE';
-    const SCRIPT = 'SCRIPT';
-    /**#@-*/
-
     /**#@+
      * Capture type and/or attributes (used for hinting during capture)
      * @var string
@@ -54,7 +46,7 @@ class HeadScript extends AbstractContainer
     public function captureStart($captureType = self::APPEND, $type = 'text/javascript', $attrs = array())
     {
         if ($this->captureLock) {
-            throw new Exception\RuntimeException('Cannot nest headScript captures');
+            throw new Exception\RuntimeException('Cannot nest Script captures');
         }
 
         $this->captureLock = true;
@@ -177,7 +169,7 @@ class HeadScript extends AbstractContainer
     /**
      * Create script HTML
      *
-     * @param  mixed $item Item to convert
+     * @param  stdClass $item Item to convert
      * @return string
      */
     public function itemToString($item)

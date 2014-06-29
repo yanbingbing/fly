@@ -7,6 +7,6 @@
 
 namespace Fly\View\Placeholder\Container;
 
-class Simple extends AbstractContainer
+class Container extends AbstractContainer
 {
 }

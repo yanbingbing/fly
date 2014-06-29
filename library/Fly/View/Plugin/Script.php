@@ -7,12 +7,12 @@
 
 namespace Fly\View\Plugin;
 
-class HeadScript extends AbstractPlugin
+class Script extends AbstractPlugin
 {
     public function __invoke($src = null, $type = 'text/javascript', array $attrs = array(), $placement = 'APPEND')
     {
         $renderer = $this->getRenderer();
-        $container = $renderer->getPlaceholder()->getContainer('HeadScript');
+        $container = $renderer->getPlaceholder()->getContainer('script');
 
         if (null !== $src) {
             $placement = strtolower($placement);
