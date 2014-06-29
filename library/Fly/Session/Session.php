@@ -7,6 +7,8 @@
 
 namespace Fly\Session;
 
+use Fly\Session\SaveHandler\SaveHandlerInterface as SaveHandler;
+
 abstract class Session
 {
     /**
@@ -24,7 +26,7 @@ abstract class Session
     protected static $sessionCookieDeleted = false;
 
     /**
-     * @var SaveHandler\SaveHandlerInterface
+     * @var callable|SaveHandler
      */
     protected static $saveHandler;
 
@@ -99,9 +101,9 @@ abstract class Session
     /**
      * Set session save handler object
      *
-     * @param  SaveHandler\SaveHandlerInterface $saveHandler
+     * @param  $saveHandler callable|SaveHandler
      */
-    public static function setSaveHandler(SaveHandler\SaveHandlerInterface $saveHandler)
+    public static function setSaveHandler($saveHandler)
     {
         self::$saveHandler = $saveHandler;
     }
@@ -109,10 +111,30 @@ abstract class Session
     /**
      * Get SaveHandler Object
      *
-     * @return SaveHandler\SaveHandlerInterface
+     * @return SaveHandler
      */
     public static function getSaveHandler()
     {
+        if (is_null(self::$saveHandler) || (self::$saveHandler instanceof SaveHandler)) {
+            return self::$saveHandler;
+        }
+
+        if (is_callable(self::$saveHandler)) {
+            $factory = self::$saveHandler;
+            try {
+                $instance = $factory();
+            } catch (\Exception $e) {
+                throw new Exception\RuntimeException(
+                    'An exception was raised while creating saveHandler', $e->getCode(), $e
+                );
+            }
+            if (!($instance instanceof SaveHandler)) {
+                throw new Exception\InvalidArgumentException('Invalid SaveHandler return from callable');
+            }
+            self::$saveHandler = $instance;
+        } else if (!(self::$saveHandler instanceof SaveHandler)) {
+            throw new Exception\InvalidArgumentException('Invalid SaveHandler set');
+        }
         return self::$saveHandler;
     }
 
@@ -283,10 +305,10 @@ abstract class Session
     /**
      * Register Save Handler with ext/session
      *
-     * @param SaveHandler\SaveHandlerInterface $saveHandler
+     * @param SaveHandler $saveHandler
      * @return bool
      */
-    protected static function registerSaveHandler(SaveHandler\SaveHandlerInterface $saveHandler)
+    protected static function registerSaveHandler(SaveHandler $saveHandler)
     {
         return session_set_save_handler(
             array($saveHandler, 'open'),
