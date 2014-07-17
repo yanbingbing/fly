@@ -77,12 +77,8 @@ class Loader
         foreach ($this->namespaces as $leader => $pathes) {
             if (0 === strpos($class, $leader)) {
                 foreach ($pathes as $path) {
-                    // Trim off leader (namespace or prefix)
-                    $trimmedClass = substr($class, strlen($leader));
-
-                    // create filename
-                    $filename = self::transformClassNameToFilename($trimmedClass, $path);
-                    if (file_exists($filename)) {
+                    $filename = self::transformClassNameToFileName($class, $leader, $path);
+                    if (($filename = stream_resolve_include_path($filename)) !== false) {
                         return include $filename;
                     }
                 }
@@ -108,16 +104,20 @@ class Loader
         return $directory;
     }
 
-    protected static function transformClassNameToFilename($class, $directory)
+    protected static function transformClassNameToFileName($className, $leader, $directory)
     {
-        // $class may contain a namespace portion, in which case we need
-        // to preserve any underscores in that portion.
-        $matches = array();
-        preg_match('/(?P<namespace>.+\\\)?(?P<class>[^\\\]+$)/', $class, $matches);
+        $lastNsPos = strrpos($className, self::NS_SEPARATOR) + 1;
+        $prefixLen = strlen($leader);
 
-        $class = (isset($matches['class'])) ? $matches['class'] : '';
-        $namespace = (isset($matches['namespace'])) ? $matches['namespace'] : '';
+        if ($lastNsPos > $prefixLen) {
+            // Replacing '\' to '/' in namespace part
+            $directory .= str_replace(
+                self::NS_SEPARATOR,
+                '/',
+                substr($className, $prefixLen, $lastNsPos - $prefixLen)
+            );
+        }
 
-        return $directory . str_replace(self::NS_SEPARATOR, '/', $namespace) . $class . '.php';
+        return $directory . substr($className, $lastNsPos) . '.php';
     }
 }
