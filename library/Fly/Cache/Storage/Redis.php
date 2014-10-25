@@ -12,6 +12,10 @@ use Fly\Cache\Exception;
 
 class Redis extends AbstractStorage
 {
+    const DEFAULT_PORT = 6379;
+
+    const DEFAULT_PERSISTENT = true;
+
     /**
      * @var RedisSource|array
      */
@@ -45,8 +49,8 @@ class Redis extends AbstractStorage
             ));
         }
 
-        $host = $port = $auth = null;
-        // array(<host>[, <port>[, <auth>]])
+        $host = $port = $auth = $persistent = null;
+        // array(<host>[, <port>[, <auth>[, <persistent>]]])
         if (isset($resource[0])) {
             list($host, $port) = explode(':', (string)$resource[0]);
             if (isset($resource[1])) {
@@ -55,7 +59,10 @@ class Redis extends AbstractStorage
             if (isset($resource[2])) {
                 $auth = (string)$resource[2];
             }
-        } // array('host' => <host>[, 'port' => <port>[, 'auth' => <auth>]])
+            if (isset($resource[3])) {
+                $persistent = (bool)$resource[3];
+            }
+        } // array('host' => <host>[, 'port' => <port>][, 'auth' => <auth>][, 'persistent' => <persistent>])
         elseif (isset($resource['host'])) {
             list($host, $port) = explode(':', (string)$resource['host']);
             if (isset($resource['port'])) {
@@ -63,6 +70,9 @@ class Redis extends AbstractStorage
             }
             if (isset($resource['auth'])) {
                 $auth = (string)$resource['auth'];
+            }
+            if (isset($resource['persistent'])) {
+                $persistent = (bool)$resource['persistent'];
             }
         }
 
@@ -72,8 +82,9 @@ class Redis extends AbstractStorage
 
         $this->resource = array(
             'host' => $host,
-            'port' => $port ? : 6379,
-            'auth' => $auth
+            'port' => $port ?: self::DEFAULT_PORT,
+            'auth' => $auth,
+            'persistent' => $persistent === null ? self::DEFAULT_PERSISTENT : $persistent
         );
     }
 
@@ -88,7 +99,11 @@ class Redis extends AbstractStorage
         }
         if (!($this->resource instanceof RedisSource)) {
             $resource = new RedisSource;
-            if (!$resource->connect($this->resource['host'], $this->resource['port'])) {
+
+            $ret = $this->resource['persistent']
+                ? $resource->pconnect($this->resource['host'], $this->resource['port'])
+                : $resource->connect($this->resource['host'], $this->resource['port']);
+            if (!$ret) {
                 throw new Exception\RuntimeException(sprintf(
                     'Cannot connect to redis server on %s:%d',
                     $this->resource['host'], $this->resource['port']
@@ -110,7 +125,7 @@ class Redis extends AbstractStorage
 
     /**
      * @param string $key
-     * @return mixed
+     * @return mixed|false If key didn't exist, FALSE is returned
      */
     public function get($key)
     {
@@ -119,9 +134,9 @@ class Redis extends AbstractStorage
     }
 
     /**
-     * @param array|string $key
+     * @param string|array $key
      * @param mixed $value
-     * @param null $ttl
+     * @param null|int $ttl in second
      * @return bool
      */
     public function set($key, $value = null, $ttl = null)
@@ -137,7 +152,9 @@ class Redis extends AbstractStorage
 
         $redis = $this->getResource();
         $key = $this->getNamespace() . $key;
-        $ttl = $ttl === null ? $this->getTtl() : $ttl;
+        if ($ttl === null) {
+            $ttl =  $this->getTtl();
+        }
         if ($ttl > 0) {
             return $redis->setex($key, $ttl, $value);
         } else {

@@ -221,4 +221,27 @@ class Result implements ResultInterface
         return $this->generatedValue;
     }
 
+    /**
+     * Fetch a record from result
+     *
+     * @return false|array
+     */
+    public function fetch()
+    {
+        return $this->next();
+    }
+
+    /**
+     * Fetch all results as array
+     *
+     * @return array
+     */
+    public function fetchAll()
+    {
+        $rowset = array();
+        foreach ($this as $row) {
+            $rowset[] = $row;
+        }
+        return $rowset;
+    }
 }

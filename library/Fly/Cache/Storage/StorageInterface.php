@@ -20,15 +20,15 @@ interface StorageInterface
 
     /**
      * @param string $key
-     * @return mixed
+     * @return mixed|false If key didn't exist, FALSE is returned
      */
     public function get($key);
 
     /**
-     * @param $key
-     * @param null $value
-     * @param null $ttl
-     * @return mixed
+     * @param array|string $key
+     * @param mixed $value
+     * @param null|int $ttl in second
+     * @return bool
      */
     public function set($key, $value = null, $ttl = null);
 

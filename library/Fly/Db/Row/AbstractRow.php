@@ -381,6 +381,19 @@ abstract class AbstractRow implements ArrayAccess, IteratorAggregate, Countable,
     }
 
     /**
+     * Revert data to clean state
+     *
+     * @return $this
+     */
+    public function revert()
+    {
+        if (!empty($this->cleanData)) {
+            $this->data = $this->cleanData;
+        }
+        return $this;
+    }
+
+    /**
      * Get modified data
      *
      * @return array

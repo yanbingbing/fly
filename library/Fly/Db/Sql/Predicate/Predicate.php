@@ -301,6 +301,25 @@ class Predicate extends PredicateSet
     }
 
     /**
+     * Create "in" predicate
+     * Utilizes In predicate
+     *
+     * @param  string $identifier
+     * @param  array|\Fly\Db\Sql\Select $valueSet
+     * @return Predicate
+     */
+    public function notIn($identifier, $valueSet = null)
+    {
+    	$this->addPredicate(
+    			new NotIn($identifier, $valueSet),
+    			($this->nextPredicateCombineOperator) ? : $this->defaultCombination
+    	);
+    	$this->nextPredicateCombineOperator = null;
+
+    	return $this;
+    }
+
+    /**
      * Create "between" predicate
      * Utilizes Between predicate
      *

@@ -365,7 +365,7 @@ class Config implements Countable, Iterator, ArrayAccess
      */
     public function merge($merge)
     {
-        if (!is_array($merge) || $merge instanceof Traversable) {
+        if (!(is_array($merge) || ($merge instanceof Traversable))) {
             throw new Exception\InvalidArgumentException(sprintf(
                 '%s: expects an array, or Traversable argument; received "%s"',
                 __METHOD__, (is_object($merge) ? get_class($merge) : gettype($merge))
@@ -378,6 +378,8 @@ class Config implements Countable, Iterator, ArrayAccess
                     $this->data[] = $value;
                 } elseif ($value instanceof self && $this->data[$key] instanceof self) {
                     $this->data[$key]->merge($value);
+                } elseif (is_array($value) && is_array($this->data[$key])) {
+                    $this->data[$key] = array_merge($this->data[$key], $value);
                 } else {
                     if ($value instanceof self) {
                         $this->data[$key] = new static($value->toArray());

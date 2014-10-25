@@ -12,6 +12,10 @@ use Fly\Cache\Exception;
 
 class Memcached extends AbstractStorage
 {
+    const DEFAULT_PORT = 11211;
+
+    const DEFAULT_WEIGHT = 1;
+
     /**
      * @var MemcachedSource|array
      */
@@ -45,7 +49,7 @@ class Memcached extends AbstractStorage
         $host = $port = $weight = $persistent_id = null;
         // array(<host>[, <port>[, <weight> [,<persistent_id>]]])
         if (isset($resource[0])) {
-            $host = (string)$resource[0];
+            list($host, $port) = explode(':', (string)$resource[0]);
             if (isset($resource[1])) {
                 $port = (int)$resource[1];
             }
@@ -57,7 +61,7 @@ class Memcached extends AbstractStorage
             }
         } // array('host' => <host>[, 'port' => <port>[, 'weight' => <weight>[, 'persistent_id' => <persistent_id>]]])
         elseif (isset($resource['host'])) {
-            $host = (string)$resource['host'];
+            list($host, $port) = explode(':', (string)$resource['host']);
             if (isset($resource['port'])) {
                 $port = (int)$resource['port'];
             }
@@ -75,8 +79,8 @@ class Memcached extends AbstractStorage
 
         $this->resource = array(
             'host' => $host,
-            'port' => $port,
-            'weight' => $weight,
+            'port' => $port ?: self::DEFAULT_PORT,
+            'weight' => $weight <= 0 ? self::DEFAULT_WEIGHT : $weight,
             'persistent_id' => $persistent_id
         );
     }
@@ -110,7 +114,7 @@ class Memcached extends AbstractStorage
 
     /**
      * @param string $key
-     * @return mixed
+     * @return mixed|false If key didn't exist, FALSE is returned
      */
     public function get($key)
     {
@@ -121,6 +125,7 @@ class Memcached extends AbstractStorage
     /**
      * @param string|array $key
      * @param mixed $value
+     * @param null|int $ttl in second
      * @return bool
      */
     public function set($key, $value = null, $ttl = null)
@@ -136,7 +141,9 @@ class Memcached extends AbstractStorage
 
         $memcached = $this->getResource();
         $key = $this->getNamespace() . $key;
-        $ttl = $ttl === null ? $this->getTtl() : $ttl;
+        if ($ttl === null) {
+            $ttl =  $this->getTtl();
+        }
         if ($ttl > 0) {
             return $memcached->set($key, $value, $ttl);
         } else {

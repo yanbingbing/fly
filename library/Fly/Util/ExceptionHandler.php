@@ -5,13 +5,20 @@ namespace Fly\Util;
 
 abstract class ExceptionHandler
 {
-    protected static $_seted = false;
+    protected static $started = false;
 
-    public static function set($handler = null)
+    public static function start($handler = null)
     {
-        if (!self::$_seted) {
-            set_error_handler(array(get_called_class(), '__errorHandler'));
-            self::$_seted = true;
+        if (!self::$started) {
+            ini_set('display_errors', false);
+            ini_set('html_errors', false);
+            set_error_handler(function ($severity = null, $text = null, $file = null, $line = null) {
+                if (error_reporting() === 0) {
+                    return;
+                }
+                throw new \ErrorException($text, 0, $severity, $file, $line);
+            }, E_ALL ^ E_STRICT ^ E_NOTICE ^ E_DEPRECATED);
+            self::$started = true;
         }
         if (is_callable($handler)) {
             set_exception_handler($handler);
@@ -22,17 +29,6 @@ abstract class ExceptionHandler
     {
         restore_exception_handler();
         restore_error_handler();
-        self::$_seted = false;
-    }
-
-    public static function __errorHandler($errno, $errstr, $errfile, $errline)
-    {
-        switch ($errno) {
-            case E_NOTICE:
-            case E_STRICT:
-            case E_DEPRECATED:
-                return;
-        }
-        throw new \ErrorException($errstr, 0, $errno, $errfile, $errline);
+        self::$started = false;
     }
 }

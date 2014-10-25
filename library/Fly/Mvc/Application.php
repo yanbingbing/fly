@@ -52,6 +52,10 @@ class Application
     public function __construct($configure = null)
     {
         $this->config = new Config($configure);
+        if (self::$sharedConfig) {
+            $sharedConfig = new Config(self::$sharedConfig);
+            $this->config = $sharedConfig->merge($this->config);
+        }
 
         $this->mountManager = MountManager::getInstance();
 
@@ -72,6 +76,18 @@ class Application
                 }
             }
         }
+    }
+
+    /**
+     * @var string|array|\Traversable
+     */
+    protected static $sharedConfig;
+    /**
+     * @param string|array|\Traversable $configure
+     */
+    public static function setSharedConfig($configure)
+    {
+        self::$sharedConfig = $configure;
     }
 
     /**

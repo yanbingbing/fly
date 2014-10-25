@@ -149,10 +149,36 @@ class Http extends Standard
             $pathInfo = substr($pathInfo, strlen($baseUrl));
         }
 
+        if ((!empty($server['HTTPS']) && $server['HTTPS'] !== 'off')
+            || (!empty($server['HTTP_X_FORWARDED_PROTO']) && $server['HTTP_X_FORWARDED_PROTO'] == 'https')
+        ) {
+            $scheme = 'https';
+        } else {
+            $scheme = 'http';
+        }
+
+        // URI host & port
+        $host = null;
+        $port = null;
+
+        if ($host = $this->getHeader('HOST')) {
+            if (preg_match('|\:(\d+)$|', $host, $matches)) {
+                $host = substr($host, 0, -1 * (strlen($matches[1]) + 1));
+                $port = (int) $matches[1];
+            }
+        }
+
+        if (!$host && isset($server['SERVER_NAME'])) {
+            $host = $server['SERVER_NAME'];
+            if (isset($server['SERVER_PORT'])) {
+                $port = (int) $server['SERVER_PORT'];
+            }
+        }
+
         return array(
-            'scheme' => isset($server['HTTPS']) && $server['HTTPS'] == 'on' ? 'https' : 'http',
-            'host' => $server['SERVER_NAME'],
-            'port' => $server['SERVER_PORT'],
+            'scheme' => $scheme,
+            'host' => $host,
+            'port' => $port,
             'query' => $server['QUERY_STRING'],
             'path' => $path,
             'baseUrl' => $baseUrl,

@@ -57,4 +57,18 @@ interface ResultInterface extends \Countable, \Iterator
      * @return int
      */
     public function getFieldCount();
+
+    /**
+     * Fetch a record from result
+     *
+     * @return false|array
+     */
+    public function fetch();
+
+    /**
+     * Fetch all results as array
+     *
+     * @return array
+     */
+    public function fetchAll();
 }

@@ -7,9 +7,6 @@
 
 namespace Fly\Util;
 
-use Fly\Util\FirePHP\FirePHP;
-use Fly\Util\ChromePHP\ChromePHP;
-
 abstract class Debug
 {
     /**
@@ -42,31 +39,29 @@ abstract class Debug
     }
 
     /**
-     * use FirePHP or ChomePHP dump message to browser
+     * @var callable
+     */
+    protected static $handler;
+
+    /**
+     * dump message to browser
      *
      * @param mixed $message
      */
-    public static function console($message)
+    public static function console($message, $label = null)
     {
-        if (strstr($_SERVER['HTTP_USER_AGENT'], ' Firefox/')) {
-            self::consoleViaFirePHP($message);
-        } elseif (strstr($_SERVER['HTTP_USER_AGENT'], ' Chrome/')) {
-            self::consoleViaChromePHP($message);
+        if (is_callable(self::$handler)) {
+            call_user_func(self::$handler, $message, $label);
         }
     }
 
-    protected static function consoleViaFirePHP($message)
+    /**
+     * @param callable $handler
+     */
+    public static function setConsoleHandler($handler)
     {
-        static $fb = null;
-
-        if (is_null($fb)) {
-            $fb = FirePHP::getInstance(true);
+        if (is_callable($handler)) {
+            self::$handler = $handler;
         }
-        $fb->info($message);
-    }
-
-    protected static function consoleViaChromePHP($message)
-    {
-        ChromePHP::info($message);
     }
 }

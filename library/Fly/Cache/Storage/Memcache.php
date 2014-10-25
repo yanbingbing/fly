@@ -53,7 +53,7 @@ class Memcache extends AbstractStorage
         $host = $port = $weight = $persistent = null;
         // array(<host>[, <port>[, <weight>[, <persistent>]]])
         if (isset($resource[0])) {
-            $host = (string)$resource[0];
+            list($host, $port) = explode(':', (string)$resource[0]);
             if (isset($resource[1])) {
                 $port = (int)$resource[1];
             }
@@ -63,9 +63,9 @@ class Memcache extends AbstractStorage
             if (isset($resource[3])) {
                 $persistent = (bool)$resource[3];
             }
-        } // array('host' => <host>[, 'port' => <port>[, 'weight' => <weight>[, 'persistent' => <persistent>]]])
+        } // array('host' => <host>[, 'port' => <port>][, 'weight' => <weight>][, 'persistent' => <persistent>])
         elseif (isset($resource['host'])) {
-            $host = (string)$resource['host'];
+            list($host, $port) = explode(':', (string)$resource['host']);
             if (isset($resource['port'])) {
                 $port = (int)$resource['port'];
             }
@@ -83,7 +83,7 @@ class Memcache extends AbstractStorage
 
         $this->resource = array(
             'host' => $host,
-            'port' => $port === null ? self::DEFAULT_PORT : $port,
+            'port' => $port ?: self::DEFAULT_PORT,
             'weight' => $weight <= 0 ? self::DEFAULT_WEIGHT : $weight,
             'persistent' => $persistent === null ? self::DEFAULT_PERSISTENT : $persistent
         );
@@ -137,7 +137,7 @@ class Memcache extends AbstractStorage
 
     /**
      * @param string $key
-     * @return mixed
+     * @return mixed|false If key didn't exist, FALSE is returned
      */
     public function get($key)
     {
@@ -146,10 +146,10 @@ class Memcache extends AbstractStorage
     }
 
     /**
-     * @param $key
-     * @param null $value
-     * @param null $ttl
-     * @return bool|mixed
+     * @param string|array $key
+     * @param mixed $value
+     * @param null|int $ttl in second
+     * @return bool
      */
     public function set($key, $value = null, $ttl = null)
     {
@@ -164,7 +164,9 @@ class Memcache extends AbstractStorage
 
         $memcache = $this->getResource();
         $key = $this->getNamespace() . $key;
-        $ttl = $ttl === null ? $this->getTtl() : $ttl;
+        if ($ttl === null) {
+            $ttl =  $this->getTtl();
+        }
         if ($ttl > 0) {
             return $memcache->set($key, $value, 0, $ttl);
         } else {

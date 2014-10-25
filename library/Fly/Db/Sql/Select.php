@@ -204,10 +204,10 @@ class Select extends AbstractSql
      * key string will be use as alias,
      * value can be string or Expression objects
      *
-     * @param array $columns
+     * @param array|string $columns
      * @return Select
      */
-    public function columns(array $columns)
+    public function columns($columns)
     {
         if (is_string($columns)) {
             $columns = $this->splitColumns($columns);

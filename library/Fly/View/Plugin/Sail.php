@@ -29,7 +29,10 @@ class Sail extends AbstractPlugin
      */
     protected $basePath = 'assets/';
 
-    protected $cmdScript = 'cmd.js';
+    /**
+     * @var string the sail script path
+     */
+    protected $sailScript = 'http://lab.yanbingbing.com/sail/sail.min.js';
 
 
     /******* runtime variables *******/
@@ -42,7 +45,7 @@ class Sail extends AbstractPlugin
 
     protected $captureLock;
 
-    protected $isCmdPrepared;
+    protected $isSailHeadPrepared;
 
     /**
      * @param  array|\Traversable|null $options
@@ -118,9 +121,9 @@ class Sail extends AbstractPlugin
         $this->basePath = ltrim(self::normalizePath($path), '/');
     }
 
-    public function setCmdScript($script)
+    public function setSailScript($script)
     {
-        $this->cmdScript = trim($script, '/');
+        $this->sailScript = trim($script, '/');
     }
 
     protected function requireJS($file)
@@ -255,14 +258,14 @@ class Sail extends AbstractPlugin
         return $this->resolveId(self::normalizePath($input->getBasePath()));
     }
 
-    protected function prepareCmd()
+    protected function prepareSailHead()
     {
-        if ($this->isCmdPrepared) {
+        if ($this->isSailHeadPrepared) {
             return;
         }
-        $this->isCmdPrepared = true;
+        $this->isSailHeadPrepared = true;
         $headScript = $this->getRenderer()->getPlaceholder()->getContainer('script:head');
-        $headScript->appendFile($this->fileToUrl($this->resolveId($this->cmdScript)));
+        $headScript->appendFile($this->fileToUrl($this->resolveId($this->sailScript)));
         $headScript->appendScript($this->genConfig());
     }
 
@@ -287,7 +290,7 @@ class Sail extends AbstractPlugin
             }
         }
 
-        $this->prepareCmd();
+        $this->prepareSailHead();
         $bottomScript = $placeholder->getContainer('script:bottom');
         if (!empty($this->requiredJS)) {
             foreach ($this->requiredJS as $file) {
